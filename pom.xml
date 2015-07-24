@@ -6,15 +6,14 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
     <version>1.580.1</version>
     <relativePath/>
   </parent>
   <artifactId>sqlplus-script-runner</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>hpi</packaging>
 
-  <name>SQLPlus Script Runner Plugin</name>
+  <name>SQLPlus Script Runner</name>
   <description>Run SQLPlus scripts on Jenkins</description>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/SQLPlus+Script+Runner+Plugin</url>
   <licenses>
@@ -30,13 +29,11 @@
       <email>boaglio@gmail.com</email>
     </developer>
   </developers>
-  <!-- Assuming you want to host on @jenkinsci:
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
   </scm>
-   -->
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
@@ -49,14 +46,4 @@
       <url>http://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
-  <!-- If you want to depend on other plugins:
-  <dependencies>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>credentials</artifactId>
-      <version>1.9.4</version>
-    </dependency>
-  </dependencies>
-  -->
-
 </project>
