@@ -15,3 +15,6 @@ You can check later all SQL*Plus output inside your build output:
 
 ![Script running inside a job](https://github.com/boaglio/jenkins-plugin-sqlplus-script-runner/raw/master/shots/script-running.png)
 
+Download the last release and give it a try!
+
+https://github.com/boaglio/jenkins-plugin-sqlplus-script-runner/releases
