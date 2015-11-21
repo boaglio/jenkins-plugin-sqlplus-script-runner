@@ -1,11 +1,11 @@
 package org.jenkinsci.plugins.sqlplusscriptrunner;
 
-import hudson.model.BuildListener;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import hudson.model.BuildListener;
 
 public class SQLPlusRunner {
 
@@ -14,6 +14,8 @@ public class SQLPlusRunner {
 	private static final String STAR = "*";
 
 	private static final String ON = " on ";
+
+	private static final String MSG_ORACLE_HOME = "Using ORACLE_HOME = ";
 
 	private static final String MSG_SCRIPT = "Running script ";
 
@@ -27,9 +29,13 @@ public class SQLPlusRunner {
 
 	private static final String MSG_GET_SQL_PLUS_VERSION = "Getting SQLPlus version";
 
-	private static final String MSG_SQL_SCRIPT_MISSING = "Please set up the SQL script!";
+	private static final String MSG_SQL_SCRIPT_MISSING1 = "Unable to read SQL script [";
+	private static final String MSG_SQL_SCRIPT_MISSING2 = "]  !";
 
 	private static final String MSG_ORACLE_HOME_MISSING = "Please set up the ORACLE_HOME!";
+
+	private static final String MSG_ORACLE_HOME_NOT_EXIST1 = "ORACLE_HOME directory [";
+	private static final String MSG_ORACLE_HOME_NOT_EXIST2 = "] does not exist!";
 
 	private static final String LOCAL_DATABASE_MSG = "local";
 
@@ -48,8 +54,14 @@ public class SQLPlusRunner {
 	public void runGetSQLPLusVersion(String sqlPath,String oracleHome) {
 
 		if (oracleHome == null) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
-		if (sqlPath == null) { throw new RuntimeException(MSG_SQL_SCRIPT_MISSING); }
 
+		File directoryAccessTest = new File(oracleHome);
+		if (!directoryAccessTest.exists()) { throw new RuntimeException(MSG_ORACLE_HOME_NOT_EXIST1 + oracleHome + MSG_ORACLE_HOME_NOT_EXIST2); }
+
+		if (sqlPath == null) { throw new RuntimeException(MSG_SQL_SCRIPT_MISSING1 + sqlPath + MSG_SQL_SCRIPT_MISSING2); }
+
+		listener.getLogger().println(LINE);
+		listener.getLogger().println(MSG_ORACLE_HOME + oracleHome);
 		listener.getLogger().println(LINE);
 		listener.getLogger().println(MSG_GET_SQL_PLUS_VERSION);
 		try {
@@ -64,12 +76,20 @@ public class SQLPlusRunner {
 	public void runScript(String user,String password,String instance,String script,String sqlPath,String oracleHome,String scriptType) throws Exception {
 
 		if (oracleHome == null) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
-		if (script == null || script.length() < 1) { throw new RuntimeException(MSG_SQL_SCRIPT_MISSING); }
+
+		File directoryAccessTest = new File(oracleHome);
+		if (!directoryAccessTest.exists()) { throw new RuntimeException(MSG_ORACLE_HOME_NOT_EXIST1 + oracleHome + MSG_ORACLE_HOME_NOT_EXIST2); }
+
+		if (script == null || script.length() < 1) { throw new RuntimeException(MSG_SQL_SCRIPT_MISSING1 + sqlPath + MSG_SQL_SCRIPT_MISSING2); }
 
 		String instanceStr = LOCAL_DATABASE_MSG;
 		if (instance != null) {
 			instanceStr = instance;
 		}
+
+		listener.getLogger().println(LINE);
+		listener.getLogger().println(MSG_ORACLE_HOME + oracleHome);
+		listener.getLogger().println(LINE);
 
 		if (ScriptType.userDefined.name().equals(scriptType)) {
 			listener.getLogger().println(MSG_DEFINED_SCRIPT + user + SLASH + showHiddenPassword(password) + AT + instanceStr);

@@ -29,8 +29,12 @@ public class ExternalProgramUtil {
 
 	public static String run(String user,String password,String instance,String script,String sqlPath,String oracleHome,String scriptType) throws IOException,InterruptedException {
 
-		String sqlplusOutput = "";
+		StringBuilder sqlplusOutput = new StringBuilder();
 		String arg1 = user + SLASH + password;
+
+		InputStreamReader isr = null;
+		BufferedReader bri = null;
+		Process p = null;
 
 		if (instance != null) {
 			arg1 = arg1 + AT + instance;
@@ -45,26 +49,50 @@ public class ExternalProgramUtil {
 		System.out.println(arg2);
 		String line;
 
-		ProcessBuilder pb = new ProcessBuilder(oracleHome + File.separator + BIN_DIR + File.separator + SQLPLUS,SQLPLUS_TRY_LOGIN_JUST_ONCE,arg1,AT + arg2);
+		try {
 
-		Map<String,String> env = pb.environment();
-		env.put(ENV_ORACLE_HOME,oracleHome);
-		env.put(ENV_LD_LIBRARY_PATH,oracleHome + File.separator + LIB_DIR);
-		env.put(ENV_TNS_ADMIN,oracleHome + File.separator + NET_DIR);
+			ProcessBuilder pb = new ProcessBuilder(oracleHome + File.separator + BIN_DIR + File.separator + SQLPLUS,SQLPLUS_TRY_LOGIN_JUST_ONCE,arg1,AT + arg2);
 
-		pb.directory(new File(sqlPath));
-		pb.redirectErrorStream(true);
+			Map<String,String> env = pb.environment();
+			env.put(ENV_ORACLE_HOME,oracleHome);
+			env.put(ENV_LD_LIBRARY_PATH,oracleHome + File.separator + LIB_DIR);
+			env.put(ENV_TNS_ADMIN,oracleHome + File.separator + NET_DIR);
 
-		Process p = pb.start();
-		p.waitFor();
+			pb.directory(new File(sqlPath));
+			pb.redirectErrorStream(true);
 
-		BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			p = pb.start();
 
-		while ( (line = bri.readLine()) != null) {
-			sqlplusOutput += line + EOL;
+			isr = new InputStreamReader(p.getInputStream());
+			bri = new BufferedReader(isr);
+
+			while ( (line = bri.readLine()) != null) {
+				sqlplusOutput.append(line + EOL);
+			}
+
+		} catch (Exception ioe) {
+
+			throw new IOException(ioe.getMessage());
+
+		} finally {
+			try {
+				p.waitFor();
+				p.getInputStream().close();
+				p.getOutputStream().close();
+				p.getErrorStream().close();
+
+			} catch (Exception e) {
+
+			}
+			if (bri != null) {
+				bri.close();
+			}
+			if (isr != null) {
+				isr.close();
+			}
 		}
 
-		return sqlplusOutput;
+		return sqlplusOutput.toString();
 	}
 
 	public static String getVersion(String sqlPath,String oracleHome) throws IOException,InterruptedException {

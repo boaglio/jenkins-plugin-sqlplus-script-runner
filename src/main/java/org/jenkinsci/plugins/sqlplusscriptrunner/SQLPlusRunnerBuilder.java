@@ -1,20 +1,19 @@
 package org.jenkinsci.plugins.sqlplusscriptrunner;
 
-import hudson.Extension;
-import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.Builder;
-
 import java.io.File;
 import java.io.IOException;
 
-import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
+import hudson.Extension;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
+import net.sf.json.JSONObject;
 
 public class SQLPlusRunnerBuilder extends Builder {
 
@@ -26,15 +25,17 @@ public class SQLPlusRunnerBuilder extends Builder {
 	private final String scriptType;
 	private final String script;
 	private final String scriptContent;
+	private final String customOracleHome;
 
 	@DataBoundConstructor
-	public SQLPlusRunnerBuilder(String user,String password,String instance,String scriptType,String script,String scriptContent) {
+	public SQLPlusRunnerBuilder(String user,String password,String instance,String scriptType,String script,String scriptContent,String customOracleHome) {
 		this.user = user;
 		this.password = password;
 		this.instance = instance;
 		this.scriptType = scriptType;
 		this.script = script;
 		this.scriptContent = scriptContent;
+		this.customOracleHome = customOracleHome;
 	}
 
 	public String getUser() {
@@ -61,22 +62,39 @@ public class SQLPlusRunnerBuilder extends Builder {
 		return scriptContent;
 	}
 
+	public String getCustomOracleHome() {
+		return customOracleHome;
+	}
+
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean perform(AbstractBuild build,Launcher launcher,BuildListener listener) throws InterruptedException,IOException {
 
 		String buildPath = build.getRootDir().getCanonicalPath();
+		String selectedOracleHome = null;
+
+		if (customOracleHome != null) {
+			selectedOracleHome = customOracleHome;
+		} else {
+			selectedOracleHome = getDescriptor().oracleHome();
+		}
 
 		String sqlPath = buildPath.substring(0,buildPath.indexOf(BUILDS_DIR)) + File.separator + WORKSPACE_DIR;
+
+		File dirSQLPath = new File(sqlPath);
+		if (!dirSQLPath.exists()) {
+			dirSQLPath.mkdirs();
+		}
+
 		try {
 			SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener);
 			if (!getDescriptor().hideSQLPlusVersion()) {
-				sqlPlusRunner.runGetSQLPLusVersion(sqlPath,getDescriptor().oracleHome());
+				sqlPlusRunner.runGetSQLPLusVersion(sqlPath,selectedOracleHome);
 			}
 			if (ScriptType.userDefined.name().equals(scriptType)) {
-				sqlPlusRunner.runScript(user,password,instance,scriptContent,sqlPath,getDescriptor().oracleHome(),scriptType);
+				sqlPlusRunner.runScript(user,password,instance,scriptContent,sqlPath,selectedOracleHome,scriptType);
 			} else {
-				sqlPlusRunner.runScript(user,password,instance,script,sqlPath,getDescriptor().oracleHome(),scriptType);
+				sqlPlusRunner.runScript(user,password,instance,script,sqlPath,selectedOracleHome,scriptType);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -98,6 +116,10 @@ public class SQLPlusRunnerBuilder extends Builder {
 		private static final String HIDE_SQL_PLUS_VERSION = "hideSQLPlusVersion";
 		private boolean hideSQLPlusVersion;
 		private String oracleHome;
+
+		public DescriptorImpl() {
+			load();
+		}
 
 		@SuppressWarnings("rawtypes")
 		@Override

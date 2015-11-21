@@ -7,10 +7,8 @@ import java.io.IOException;
 
 import org.jenkinsci.plugins.sqlplusscriptrunner.ExternalProgramUtil;
 import org.jenkinsci.plugins.sqlplusscriptrunner.ScriptType;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore
 public class TestSQLPlus {
 
 	private static final String SCRIPT_SQL = "script.sql";

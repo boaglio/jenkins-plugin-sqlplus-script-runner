@@ -20,4 +20,7 @@
   <f:entry title="User Defined Script" field="scriptContent">
     <f:textarea />
   </f:entry>
+  <f:entry title="Custom ORACLE_HOME" field="customOracleHome" >
+    <f:textbox />
+  </f:entry>
 </j:jelly>
