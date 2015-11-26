@@ -17,8 +17,15 @@ import net.sf.json.JSONObject;
 
 public class SQLPlusRunnerBuilder extends Builder {
 
+	private static final String ENV_ORACLE_HOME = "ORACLE_HOME";
 	private static final String WORKSPACE_DIR = "workspace";
 	private static final String BUILDS_DIR = "builds";
+	private static final String LINE = "--------------------------------------------------------------------------";
+	private static final String MSG_GET_ORACLE_HOME = "Getting ORACLE_HOME...";
+	private static final String MSG_CUSTOM_ORACLE_HOME = "Using custom ORACLE_HOME";
+	private static final String MSG_GLOBAL_ORACLE_HOME = "Using global ORACLE_HOME";
+	private static final String MSG_DETECTED_ORACLE_HOME = "Using detected ORACLE_HOME";
+
 	private final String user;
 	private final String password;
 	private final String instance;
@@ -72,9 +79,22 @@ public class SQLPlusRunnerBuilder extends Builder {
 
 		String buildPath = build.getRootDir().getCanonicalPath();
 		String selectedOracleHome = null;
+		String detectedOracleHome = System.getenv(ENV_ORACLE_HOME);
 
-		if (customOracleHome != null) {
+		listener.getLogger().println(LINE);
+		listener.getLogger().println(MSG_GET_ORACLE_HOME);
+		if (customOracleHome != null && customOracleHome.length() > 0) {
+			listener.getLogger().println(LINE);
+			listener.getLogger().println(MSG_CUSTOM_ORACLE_HOME);
 			selectedOracleHome = customOracleHome;
+		} else if (getDescriptor().oracleHome != null && getDescriptor().oracleHome.length() > 0) {
+			listener.getLogger().println(LINE);
+			listener.getLogger().println(MSG_GLOBAL_ORACLE_HOME);
+			selectedOracleHome = getDescriptor().oracleHome();
+		} else if (getDescriptor().tryToDetectOracleHome && detectedOracleHome != null) {
+			listener.getLogger().println(LINE);
+			listener.getLogger().println(MSG_DETECTED_ORACLE_HOME);
+			selectedOracleHome = detectedOracleHome;
 		} else {
 			selectedOracleHome = getDescriptor().oracleHome();
 		}
@@ -114,7 +134,9 @@ public class SQLPlusRunnerBuilder extends Builder {
 		private static final String DISPLAY_MESSAGE = "SQLPlus Script Runner";
 		private static final String ORACLE_HOME = "oracleHome";
 		private static final String HIDE_SQL_PLUS_VERSION = "hideSQLPlusVersion";
+		private static final String TRY_TO_DETECT_ORACLE_HOME = "tryToDetectOracleHome";
 		private boolean hideSQLPlusVersion;
+		private boolean tryToDetectOracleHome;
 		private String oracleHome;
 
 		public DescriptorImpl() {
@@ -136,6 +158,7 @@ public class SQLPlusRunnerBuilder extends Builder {
 		public boolean configure(StaplerRequest req,JSONObject formData) throws FormException {
 			hideSQLPlusVersion = formData.getBoolean(HIDE_SQL_PLUS_VERSION);
 			oracleHome = formData.getString(ORACLE_HOME);
+			tryToDetectOracleHome = formData.getBoolean(TRY_TO_DETECT_ORACLE_HOME);
 			save();
 			return super.configure(req,formData);
 		}
@@ -147,5 +170,10 @@ public class SQLPlusRunnerBuilder extends Builder {
 		public String oracleHome() {
 			return oracleHome;
 		}
+
+		public boolean tryToDetectOracleHome() {
+			return tryToDetectOracleHome;
+		}
+
 	}
 }

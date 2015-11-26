@@ -53,7 +53,7 @@ public class SQLPlusRunner {
 
 	public void runGetSQLPLusVersion(String sqlPath,String oracleHome) {
 
-		if (oracleHome == null) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
+		if (oracleHome == null || oracleHome.length() < 1) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
 
 		File directoryAccessTest = new File(oracleHome);
 		if (!directoryAccessTest.exists()) { throw new RuntimeException(MSG_ORACLE_HOME_NOT_EXIST1 + oracleHome + MSG_ORACLE_HOME_NOT_EXIST2); }
@@ -75,7 +75,7 @@ public class SQLPlusRunner {
 
 	public void runScript(String user,String password,String instance,String script,String sqlPath,String oracleHome,String scriptType) throws Exception {
 
-		if (oracleHome == null) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
+		if (oracleHome == null || oracleHome.length() < 1) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
 
 		File directoryAccessTest = new File(oracleHome);
 		if (!directoryAccessTest.exists()) { throw new RuntimeException(MSG_ORACLE_HOME_NOT_EXIST1 + oracleHome + MSG_ORACLE_HOME_NOT_EXIST2); }
