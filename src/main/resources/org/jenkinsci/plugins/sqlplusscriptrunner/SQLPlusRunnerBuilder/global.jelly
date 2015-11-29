@@ -2,15 +2,15 @@
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:section title="SQLPlus Script Runner">
 
-	<f:entry title="Hide SQLPlus Version" field="hideSQLPlusVersion">
+	<f:entry title="${%Hide SQLPlus Version}" field="hideSQLPlusVersion">
  	 <f:checkbox />
 	</f:entry>
 
-	<f:entry title="Try to detect ORACLE_HOME" field="tryToDetectOracleHome">
+	<f:entry title="${%Try to detect ORACLE_HOME}" field="tryToDetectOracleHome">
 		<f:checkbox />
 	</f:entry>
 
-	<f:entry title="Set global ORACLE_HOME" field="oracleHome">
+	<f:entry title="${%Set global ORACLE_HOME}" field="oracleHome">
 		<f:textbox />
 	</f:entry>
 

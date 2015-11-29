@@ -9,33 +9,27 @@ import hudson.model.BuildListener;
 
 public class SQLPlusRunner {
 
-	private static final String MSG_TEMP_SCRIPT = "Temp script:";
+	private static final String MSG_TEMP_SCRIPT = Messages.SQLPlusRunner_tempScript();
 
 	private static final String STAR = "*";
 
 	private static final String ON = " on ";
 
-	private static final String MSG_ORACLE_HOME = "Using ORACLE_HOME = ";
+	private static final String MSG_ORACLE_HOME = Messages.SQLPlusRunner_usingOracleHome();
 
-	private static final String MSG_SCRIPT = "Running script ";
+	private static final String MSG_SCRIPT = Messages.SQLPlusRunner_runningScript();
 
-	private static final String MSG_DEFINED_SCRIPT = "Running defined script on ";
+	private static final String MSG_DEFINED_SCRIPT = Messages.SQLPlusRunner_runningDefinedScript();
 
 	private static final String AT = "@";
 
 	private static final String SLASH = "/";
 
-	private static final String MSG_ERROR = "Error:";
+	private static final String MSG_ERROR = Messages.SQLPlusRunner_error();
 
-	private static final String MSG_GET_SQL_PLUS_VERSION = "Getting SQLPlus version";
+	private static final String MSG_GET_SQL_PLUS_VERSION = Messages.SQLPlusRunner_gettingSQLPlusVersion();
 
-	private static final String MSG_SQL_SCRIPT_MISSING1 = "Unable to read SQL script [";
-	private static final String MSG_SQL_SCRIPT_MISSING2 = "]  !";
-
-	private static final String MSG_ORACLE_HOME_MISSING = "Please set up the ORACLE_HOME!";
-
-	private static final String MSG_ORACLE_HOME_NOT_EXIST1 = "ORACLE_HOME directory [";
-	private static final String MSG_ORACLE_HOME_NOT_EXIST2 = "] does not exist!";
+	private static final String MSG_ORACLE_HOME_MISSING = Messages.SQLPlusRunner_missingOracleHome();
 
 	private static final String LOCAL_DATABASE_MSG = "local";
 
@@ -56,9 +50,9 @@ public class SQLPlusRunner {
 		if (oracleHome == null || oracleHome.length() < 1) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
 
 		File directoryAccessTest = new File(oracleHome);
-		if (!directoryAccessTest.exists()) { throw new RuntimeException(MSG_ORACLE_HOME_NOT_EXIST1 + oracleHome + MSG_ORACLE_HOME_NOT_EXIST2); }
+		if (!directoryAccessTest.exists()) { throw new RuntimeException(Messages.SQLPlusRunner_wrongOracleHome(oracleHome)); }
 
-		if (sqlPath == null) { throw new RuntimeException(MSG_SQL_SCRIPT_MISSING1 + sqlPath + MSG_SQL_SCRIPT_MISSING2); }
+		if (sqlPath == null) { throw new RuntimeException(Messages.SQLPlusRunner_missingScript(sqlPath)); }
 
 		listener.getLogger().println(LINE);
 		listener.getLogger().println(MSG_ORACLE_HOME + oracleHome);
@@ -78,9 +72,9 @@ public class SQLPlusRunner {
 		if (oracleHome == null || oracleHome.length() < 1) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
 
 		File directoryAccessTest = new File(oracleHome);
-		if (!directoryAccessTest.exists()) { throw new RuntimeException(MSG_ORACLE_HOME_NOT_EXIST1 + oracleHome + MSG_ORACLE_HOME_NOT_EXIST2); }
+		if (!directoryAccessTest.exists()) { throw new RuntimeException(Messages.SQLPlusRunner_wrongOracleHome(oracleHome)); }
 
-		if (script == null || script.length() < 1) { throw new RuntimeException(MSG_SQL_SCRIPT_MISSING1 + sqlPath + MSG_SQL_SCRIPT_MISSING2); }
+		if (script == null || script.length() < 1) { throw new RuntimeException(Messages.SQLPlusRunner_missingScript(sqlPath)); }
 
 		String instanceStr = LOCAL_DATABASE_MSG;
 		if (instance != null) {

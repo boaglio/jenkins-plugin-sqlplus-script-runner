@@ -18,3 +18,23 @@ You can check later all SQL*Plus output inside your build output:
 Download the last release and give it a try!
 
 https://github.com/boaglio/jenkins-plugin-sqlplus-script-runner/releases
+
+# Developer guide
+
+1. Fork repository
+2. Code code code
+3. Run it with  mvn clean -DskipTests hpi:run
+4. Try it at http://localhost:8080
+5. Commit and submit pull request
+
+# Translator guide
+
+1. Fork repository
+2. Copy config.properties to config_<lang>.properties (example: config_pt_BR.properties)
+3. Copy global.properties to global_<lang>.properties
+4. Copy Messages.properties to Messages_<lang>.properties
+5. Copy all HTML files too
+6. Translate it
+7. Run it with  mvn clean -DskipTests hpi:run
+8. Try it at http://localhost:8080
+9. Commit and submit pull request

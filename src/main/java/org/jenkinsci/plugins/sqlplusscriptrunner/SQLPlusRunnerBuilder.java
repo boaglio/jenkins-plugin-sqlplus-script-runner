@@ -20,11 +20,11 @@ public class SQLPlusRunnerBuilder extends Builder {
 	private static final String ENV_ORACLE_HOME = "ORACLE_HOME";
 	private static final String WORKSPACE_DIR = "workspace";
 	private static final String BUILDS_DIR = "builds";
-	private static final String LINE = "--------------------------------------------------------------------------";
-	private static final String MSG_GET_ORACLE_HOME = "Getting ORACLE_HOME...";
-	private static final String MSG_CUSTOM_ORACLE_HOME = "Using custom ORACLE_HOME";
-	private static final String MSG_GLOBAL_ORACLE_HOME = "Using global ORACLE_HOME";
-	private static final String MSG_DETECTED_ORACLE_HOME = "Using detected ORACLE_HOME";
+	private static final String LINE = Messages.SQLPlusRunnerBuilder_line();
+	private static final String MSG_GET_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_gettingOracleHome();
+	private static final String MSG_CUSTOM_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_usingCustomOracleHome();
+	private static final String MSG_GLOBAL_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_usingGlobalOracleHome();
+	private static final String MSG_DETECTED_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_usingDetectedOracleHome();
 
 	private final String user;
 	private final String password;
@@ -90,13 +90,13 @@ public class SQLPlusRunnerBuilder extends Builder {
 		} else if (getDescriptor().oracleHome != null && getDescriptor().oracleHome.length() > 0) {
 			listener.getLogger().println(LINE);
 			listener.getLogger().println(MSG_GLOBAL_ORACLE_HOME);
-			selectedOracleHome = getDescriptor().oracleHome();
+			selectedOracleHome = getDescriptor().getOracleHome();
 		} else if (getDescriptor().tryToDetectOracleHome && detectedOracleHome != null) {
 			listener.getLogger().println(LINE);
 			listener.getLogger().println(MSG_DETECTED_ORACLE_HOME);
 			selectedOracleHome = detectedOracleHome;
 		} else {
-			selectedOracleHome = getDescriptor().oracleHome();
+			selectedOracleHome = getDescriptor().getOracleHome();
 		}
 
 		String sqlPath = buildPath.substring(0,buildPath.indexOf(BUILDS_DIR)) + File.separator + WORKSPACE_DIR;
@@ -108,7 +108,7 @@ public class SQLPlusRunnerBuilder extends Builder {
 
 		try {
 			SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener);
-			if (!getDescriptor().hideSQLPlusVersion()) {
+			if (!getDescriptor().isHideSQLPlusVersion()) {
 				sqlPlusRunner.runGetSQLPLusVersion(sqlPath,selectedOracleHome);
 			}
 			if (ScriptType.userDefined.name().equals(scriptType)) {
@@ -163,16 +163,28 @@ public class SQLPlusRunnerBuilder extends Builder {
 			return super.configure(req,formData);
 		}
 
-		public boolean hideSQLPlusVersion() {
+		public boolean isHideSQLPlusVersion() {
 			return hideSQLPlusVersion;
 		}
 
-		public String oracleHome() {
+		public void setHideSQLPlusVersion(boolean hideSQLPlusVersion) {
+			this.hideSQLPlusVersion = hideSQLPlusVersion;
+		}
+
+		public boolean isTryToDetectOracleHome() {
+			return tryToDetectOracleHome;
+		}
+
+		public void setTryToDetectOracleHome(boolean tryToDetectOracleHome) {
+			this.tryToDetectOracleHome = tryToDetectOracleHome;
+		}
+
+		public String getOracleHome() {
 			return oracleHome;
 		}
 
-		public boolean tryToDetectOracleHome() {
-			return tryToDetectOracleHome;
+		public void setOracleHome(String oracleHome) {
+			this.oracleHome = oracleHome;
 		}
 
 	}

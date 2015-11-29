@@ -1,26 +1,26 @@
  <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="user" field="user">
+  <f:entry title="${%user}" field="user">
     <f:textbox />
   </f:entry>
-  <f:entry title="password" field="password">
+  <f:entry title="${%password}" field="password">
     <f:password />
   </f:entry>
-  <f:entry title="instance" field="instance">
+  <f:entry title="${%instance}" field="instance">
     <f:textbox />
   </f:entry>
-  <f:entry name="scriptType" title="Script Type to run" field="scriptType">
+  <f:entry name="scriptType" title="${%Script Type to run}" field="scriptType">
     <select name="scriptType">
-        <option value="file">File Script</option>
-        <option value="userDefined">User Defined Script</option>
+        <option value="file">${%File Script}</option>
+        <option value="userDefined">${%User Defined Script}</option>
     </select>
   </f:entry>
-  <f:entry title="File Script" field="script">
+  <f:entry title="${%File Script}" field="script">
     <f:textbox />
   </f:entry>
-  <f:entry title="User Defined Script" field="scriptContent">
+  <f:entry title="${%User Defined Script}" field="scriptContent">
     <f:textarea />
   </f:entry>
-  <f:entry title="Custom ORACLE_HOME" field="customOracleHome" >
+  <f:entry title="${%Custom ORACLE_HOME}" field="customOracleHome" >
     <f:textbox />
   </f:entry>
 </j:jelly>
