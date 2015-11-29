@@ -7,8 +7,10 @@ import java.io.IOException;
 
 import org.jenkinsci.plugins.sqlplusscriptrunner.ExternalProgramUtil;
 import org.jenkinsci.plugins.sqlplusscriptrunner.ScriptType;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TestSQLPlus {
 
 	private static final String SCRIPT_SQL = "script.sql";
@@ -23,7 +25,7 @@ public class TestSQLPlus {
 
 		String detectedVersion = ExternalProgramUtil.getVersion(WORK_DIR,ORACLE_HOME);
 
-		System.out.println("detected version = " + detectedVersion);
+		System.out.println("SQLPlus detected version = " + detectedVersion);
 
 		assertTrue(detectedVersion.contains("SQL*Plus: Release 12.1.0.1.0 Production"));
 	}
