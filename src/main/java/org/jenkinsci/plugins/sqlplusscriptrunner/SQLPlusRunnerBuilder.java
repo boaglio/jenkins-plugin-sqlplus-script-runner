@@ -1,11 +1,12 @@
 package org.jenkinsci.plugins.sqlplusscriptrunner;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -18,8 +19,6 @@ import net.sf.json.JSONObject;
 public class SQLPlusRunnerBuilder extends Builder {
 
 	private static final String ENV_ORACLE_HOME = "ORACLE_HOME";
-	private static final String WORKSPACE_DIR = "workspace";
-	private static final String BUILDS_DIR = "builds";
 	private static final String LINE = Messages.SQLPlusRunnerBuilder_line();
 	private static final String MSG_GET_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_gettingOracleHome();
 	private static final String MSG_CUSTOM_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_usingCustomOracleHome();
@@ -77,7 +76,6 @@ public class SQLPlusRunnerBuilder extends Builder {
 	@Override
 	public boolean perform(AbstractBuild build,Launcher launcher,BuildListener listener) throws InterruptedException,IOException {
 
-		String buildPath = build.getRootDir().getCanonicalPath();
 		String selectedOracleHome = null;
 		String detectedOracleHome = System.getenv(ENV_ORACLE_HOME);
 
@@ -99,25 +97,30 @@ public class SQLPlusRunnerBuilder extends Builder {
 			selectedOracleHome = getDescriptor().getOracleHome();
 		}
 
-		String sqlPath = buildPath.substring(0,buildPath.indexOf(BUILDS_DIR)) + File.separator + WORKSPACE_DIR;
-
-		File dirSQLPath = new File(sqlPath);
-		if (!dirSQLPath.exists()) {
-			dirSQLPath.mkdirs();
+		final String sqlScript;
+		if (ScriptType.userDefined.name().equals(scriptType)) {
+			sqlScript = scriptContent;
+		} else {
+			sqlScript = script;
 		}
 
+		// Create a SQLPlusRunner Callable. It is invoked by the build workspace, which is a filepath. Then
+		// the remoting module will take care to execute this task remotely if necessary (ie on a slave) or
+		// locally.
+		Map<String, String> envVars = build.getEnvironment(listener);
+		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener,envVars,getDescriptor().isHideSQLPlusVersion(),user,
+				password,instance,sqlScript,selectedOracleHome,scriptType);
+
 		try {
-			SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener);
-			if (!getDescriptor().isHideSQLPlusVersion()) {
-				sqlPlusRunner.runGetSQLPLusVersion(sqlPath,selectedOracleHome);
-			}
-			if (ScriptType.userDefined.name().equals(scriptType)) {
-				sqlPlusRunner.runScript(user,password,instance,scriptContent,sqlPath,selectedOracleHome,scriptType);
-			} else {
-				sqlPlusRunner.runScript(user,password,instance,script,sqlPath,selectedOracleHome,scriptType);
-			}
+			// The FilePath executing this callable can be used in the #invoke method to get access to
+			// the virtual file. Operations will happen either on the slave or on the master node, and results
+			// will be serialized back to the master.
+			build.getWorkspace().act(sqlPlusRunner);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			// Either throw an abort exception, or just log the error, set build result to failure or unstable
+			// and then proceed with other build steps.
+			e.printStackTrace(listener.getLogger());
+			throw new AbortException(e.getMessage());
 		}
 
 		return true;

@@ -12,6 +12,11 @@
   <version>1.0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
+  <properties>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  	<java.version>1.7</java.version>
+  </properties>
+
   <name>SQLPlus Script Runner</name>
   <description>Run SQLPlus scripts on Jenkins</description>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/SQLPlus+Script+Runner+Plugin</url>
@@ -46,4 +51,18 @@
       <url>http://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
+
+  <build>
+  	<plugins>
+  		<plugin>
+  			<groupId>org.apache.maven.plugins</groupId>
+  			<artifactId>maven-compiler-plugin</artifactId>
+  			<configuration>
+  				<target>${java.version}</target>
+  				<source>${java.version}</source>
+  			</configuration>
+  		</plugin>
+  	</plugins>
+  </build>
+
 </project>
