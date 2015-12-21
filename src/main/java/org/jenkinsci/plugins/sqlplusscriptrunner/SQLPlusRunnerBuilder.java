@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.sqlplusscriptrunner;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -17,13 +16,6 @@ import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 
 public class SQLPlusRunnerBuilder extends Builder {
-
-	private static final String ENV_ORACLE_HOME = "ORACLE_HOME";
-	private static final String LINE = Messages.SQLPlusRunnerBuilder_line();
-	private static final String MSG_GET_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_gettingOracleHome();
-	private static final String MSG_CUSTOM_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_usingCustomOracleHome();
-	private static final String MSG_GLOBAL_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_usingGlobalOracleHome();
-	private static final String MSG_DETECTED_ORACLE_HOME = Messages.SQLPlusRunnerBuilder_usingDetectedOracleHome();
 
 	private final String user;
 	private final String password;
@@ -76,27 +68,6 @@ public class SQLPlusRunnerBuilder extends Builder {
 	@Override
 	public boolean perform(AbstractBuild build,Launcher launcher,BuildListener listener) throws InterruptedException,IOException {
 
-		String selectedOracleHome = null;
-		String detectedOracleHome = System.getenv(ENV_ORACLE_HOME);
-
-		listener.getLogger().println(LINE);
-		listener.getLogger().println(MSG_GET_ORACLE_HOME);
-		if (customOracleHome != null && customOracleHome.length() > 0) {
-			listener.getLogger().println(LINE);
-			listener.getLogger().println(MSG_CUSTOM_ORACLE_HOME);
-			selectedOracleHome = customOracleHome;
-		} else if (getDescriptor().oracleHome != null && getDescriptor().oracleHome.length() > 0) {
-			listener.getLogger().println(LINE);
-			listener.getLogger().println(MSG_GLOBAL_ORACLE_HOME);
-			selectedOracleHome = getDescriptor().getOracleHome();
-		} else if (getDescriptor().tryToDetectOracleHome && detectedOracleHome != null) {
-			listener.getLogger().println(LINE);
-			listener.getLogger().println(MSG_DETECTED_ORACLE_HOME);
-			selectedOracleHome = detectedOracleHome;
-		} else {
-			selectedOracleHome = getDescriptor().getOracleHome();
-		}
-
 		final String sqlScript;
 		if (ScriptType.userDefined.name().equals(scriptType)) {
 			sqlScript = scriptContent;
@@ -104,12 +75,8 @@ public class SQLPlusRunnerBuilder extends Builder {
 			sqlScript = script;
 		}
 
-		// Create a SQLPlusRunner Callable. It is invoked by the build workspace, which is a filepath. Then
-		// the remoting module will take care to execute this task remotely if necessary (ie on a slave) or
-		// locally.
-		Map<String, String> envVars = build.getEnvironment(listener);
-		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener,envVars,getDescriptor().isHideSQLPlusVersion(),user,
-				password,instance,sqlScript,selectedOracleHome,scriptType);
+		build.getEnvironment(listener);
+		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener,getDescriptor().isHideSQLPlusVersion(),user,password,instance,sqlScript,getDescriptor().oracleHome,scriptType,customOracleHome,getDescriptor().tryToDetectOracleHome);
 
 		try {
 			// The FilePath executing this callable can be used in the #invoke method to get access to
