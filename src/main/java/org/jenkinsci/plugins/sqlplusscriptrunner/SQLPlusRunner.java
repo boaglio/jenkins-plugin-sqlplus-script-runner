@@ -162,7 +162,9 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 			script = createTempScript(script);
 			listener.getLogger().println(MSG_TEMP_SCRIPT + script);
 		} else {
-			listener.getLogger().println(MSG_SCRIPT + script + ON + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
+			listener.getLogger().println(MSG_SCRIPT + " " + path + File.separator + script + " " + ON + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
+			File scriptFile = new File(path + File.separator + script);
+			if (!scriptFile.exists()) { throw new RuntimeException(Messages.SQLPlusRunner_missingScript(path + File.separator + script)); }
 		}
 
 		listener.getLogger().println(LINE);
@@ -181,7 +183,13 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 				arg1 = arg1 + AT + instance;
 			}
 
-			String arg2 = script;
+			String arg2 = "";
+
+			if (ScriptType.userDefined.name().equals(scriptType)) {
+				arg2 = script;
+			} else {
+				arg2 = path + File.separator + script;
+			}
 
 			String sqlplus = SQLPLUS;
 			if (isWindowsOS()) {
@@ -196,6 +204,8 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 			ProcessBuilder proc = new ProcessBuilder(args.toList());
 			proc.environment().putAll(envVars);
 			proc.redirectErrorStream(true);
+			proc.directory(path);
+
 			Process process = proc.start();
 			int exitCode = process.waitFor();
 
