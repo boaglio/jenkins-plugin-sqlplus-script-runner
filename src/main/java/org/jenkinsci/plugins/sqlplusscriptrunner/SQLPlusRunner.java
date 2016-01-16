@@ -164,6 +164,7 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		} else {
 			listener.getLogger().println(MSG_SCRIPT + " " + path + File.separator + script + " " + ON + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
 			File scriptFile = new File(path + File.separator + script);
+			addExit(null,scriptFile);
 			if (!scriptFile.exists()) { throw new RuntimeException(Messages.SQLPlusRunner_missingScript(path + File.separator + script)); }
 		}
 
@@ -270,17 +271,32 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 	private String createTempScript(String content) {
 
 		String tempFile = "";
-		BufferedWriter bw = null;
 		try {
 
 			File file = File.createTempFile(SQL_TEMP_SCRIPT + System.currentTimeMillis(),SQL_PREFIX);
 
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			bw = new BufferedWriter(fw);
-			bw.write(content);
-			bw.write(SQLPLUS_EXIT);
+			addExit(content,file);
 
 			tempFile = file.getPath();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return tempFile;
+
+	}
+
+	private void addExit(String content,File file) throws IOException {
+
+		BufferedWriter bw = null;
+		try {
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
+			bw = new BufferedWriter(fw);
+			if (content != null) {
+				bw.write(content);
+			}
+			bw.write(SQLPLUS_EXIT);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -289,8 +305,6 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 			} catch (IOException e) {}
 
 		}
-		return tempFile;
-
 	}
 
 	private boolean isWindowsOS() {
