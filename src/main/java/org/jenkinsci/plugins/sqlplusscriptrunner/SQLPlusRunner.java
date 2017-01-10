@@ -164,8 +164,9 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		} else {
 			listener.getLogger().println(MSG_SCRIPT + " " + path + File.separator + script + " " + ON + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
 			File scriptFile = new File(path + File.separator + script);
-			addExit(null,scriptFile);
 			if (!scriptFile.exists()) { throw new RuntimeException(Messages.SQLPlusRunner_missingScript(path + File.separator + script)); }
+			if (!FileUtil.hasExitCode(scriptFile))
+			 addExit(null,scriptFile);
 		}
 
 		listener.getLogger().println(LINE);
@@ -223,7 +224,7 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		return null;
 	}
 
-	private void runGetSQLPLusVersion(String oracleHome,BuildListener listener) {
+	public void runGetSQLPLusVersion(String oracleHome,BuildListener listener) {
 
 		if (oracleHome == null || oracleHome.length() < 1) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
 
@@ -275,7 +276,8 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 
 			File file = File.createTempFile(SQL_TEMP_SCRIPT + System.currentTimeMillis(),SQL_PREFIX);
 
-			addExit(content,file);
+			if (!FileUtil.hasExitCode(file))
+			  addExit(content,file);
 
 			tempFile = file.getPath();
 

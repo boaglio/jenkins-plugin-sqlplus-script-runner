@@ -6,6 +6,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -68,14 +69,16 @@ public class SQLPlusRunnerBuilder extends Builder {
 	@Override
 	public boolean perform(AbstractBuild build,Launcher launcher,BuildListener listener) throws InterruptedException,IOException {
 
-		final String sqlScript;
+		  String sqlScript;
 		if (ScriptType.userDefined.name().equals(scriptType)) {
 			sqlScript = scriptContent;
 		} else {
 			sqlScript = script;
 		}
 
-		build.getEnvironment(listener);
+		EnvVars env = build.getEnvironment(listener);
+		sqlScript = env.expand(sqlScript);
+
 		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener,getDescriptor().isHideSQLPlusVersion(),user,password,instance,sqlScript,getDescriptor().oracleHome,scriptType,customOracleHome,getDescriptor().tryToDetectOracleHome);
 
 		try {
