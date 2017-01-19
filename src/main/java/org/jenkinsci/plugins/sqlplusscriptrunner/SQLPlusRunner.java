@@ -1,8 +1,6 @@
 package org.jenkinsci.plugins.sqlplusscriptrunner;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 import hudson.EnvVars;
@@ -52,16 +50,12 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 	private static final String MSG_DETECTED_ORACLE_HOME = Messages.SQLPlusRunner_usingDetectedOracleHome();
 	private static final String LOCAL_DATABASE_MSG = "local";
 
-	private static final String SQL_TEMP_SCRIPT = "temp-script-";
-
-	private static final String SQL_PREFIX = ".sql";
 
 	private static final String HIDDEN_PASSWORD = "********";
 
 	private static final String LINE = Messages.SQLPlusRunner_line();
 
 	// For executing commands
-	private static final String EOL = "\n";
 	private static final String LIB_DIR = "lib";
 	private static final String BIN_DIR = "bin";
 	private static final String NET_DIR = "network" + File.separator + "admin";
@@ -73,12 +67,14 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 	private static final String SQLPLUS_TRY_LOGIN_JUST_ONCE = "-L";
 	private static final String SQLPLUS = "sqlplus";
 	private static final String SQLPLUS_FOR_WINDOWS = "sqlplus.exe";
-	private static final String SQLPLUS_EXIT = EOL + "exit;" + EOL + "exit;";
+
 	private static final String SQLPLUS_VERSION = "-v";
 
 	private static final int PROCESS_EXIT_CODE_SUCCESSFUL = 0;
 
-	public SQLPlusRunner(BuildListener listener,boolean isHideSQLPlusVersion,String user,String password,String instance,String script,String oracleHome,String scriptType,String customOracleHome,boolean tryToDetectOracleHome) {
+	public SQLPlusRunner(BuildListener listener, boolean isHideSQLPlusVersion, String user, String password,
+			String instance, String script, String oracleHome, String scriptType, String customOracleHome,
+			boolean tryToDetectOracleHome) {
 		this.listener = listener;
 		this.isHideSQLPlusVersion = isHideSQLPlusVersion;
 		this.user = user;
@@ -112,7 +108,7 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 	private final boolean tryToDetectOracleHome;
 
 	@Override
-	public Void invoke(File path,VirtualChannel channel) throws IOException,InterruptedException {
+	public Void invoke(File path, VirtualChannel channel) throws IOException, InterruptedException {
 
 		String selectedOracleHome = null;
 		String detectedOracleHome = System.getenv(ENV_ORACLE_HOME);
@@ -140,15 +136,21 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		}
 
 		if (!isHideSQLPlusVersion) {
-			runGetSQLPLusVersion(selectedOracleHome,listener);
+			runGetSQLPLusVersion(selectedOracleHome, listener);
 		}
 
-		if (selectedOracleHome == null || selectedOracleHome.length() < 1) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
+		if (selectedOracleHome == null || selectedOracleHome.length() < 1) {
+			throw new RuntimeException(MSG_ORACLE_HOME_MISSING);
+		}
 
 		File directoryAccessTest = new File(selectedOracleHome);
-		if (!directoryAccessTest.exists()) { throw new RuntimeException(Messages.SQLPlusRunner_wrongOracleHome(selectedOracleHome)); }
+		if (!directoryAccessTest.exists()) {
+			throw new RuntimeException(Messages.SQLPlusRunner_wrongOracleHome(selectedOracleHome));
+		}
 
-		if (script == null || script.length() < 1) { throw new RuntimeException(Messages.SQLPlusRunner_missingScript(path)); }
+		if (script == null || script.length() < 1) {
+			throw new RuntimeException(Messages.SQLPlusRunner_missingScript(path));
+		}
 
 		String instanceStr = LOCAL_DATABASE_MSG;
 		if (instance != null) {
@@ -162,15 +164,18 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		String tempScript = null;
 		if (ScriptType.userDefined.name().equals(scriptType)) {
 			listener.getLogger().println(MSG_DEFINED_SCRIPT + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
-			script = createTempScript(script);
+			script = FileUtil.createTempScript(script);
 			tempScript = script;
 			listener.getLogger().println(MSG_TEMP_SCRIPT + script);
 		} else {
-			listener.getLogger().println(MSG_SCRIPT + " " + path + File.separator + script + " " + ON + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
+			listener.getLogger().println(MSG_SCRIPT + " " + path + File.separator + script + " " + ON + " " + user
+					+ SLASH + HIDDEN_PASSWORD + AT + instanceStr);
 			File scriptFile = new File(path + File.separator + script);
-			if (!scriptFile.exists()) { throw new RuntimeException(Messages.SQLPlusRunner_missingScript(path + File.separator + script)); }
+			if (!scriptFile.exists()) {
+				throw new RuntimeException(Messages.SQLPlusRunner_missingScript(path + File.separator + script));
+			}
 			if (!FileUtil.hasExitCode(scriptFile))
-			 addExit(null,scriptFile);
+				FileUtil.addExit(null, scriptFile);
 		}
 
 		listener.getLogger().println(LINE);
@@ -179,9 +184,9 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		try {
 			// and the extra ones for the plugin
 			EnvVars envVars = new EnvVars();
-			envVars.put(ENV_ORACLE_HOME,selectedOracleHome);
-			envVars.put(ENV_LD_LIBRARY_PATH,selectedOracleHome + File.separator + LIB_DIR);
-			envVars.put(ENV_TNS_ADMIN,selectedOracleHome + File.separator + NET_DIR);
+			envVars.put(ENV_ORACLE_HOME, selectedOracleHome);
+			envVars.put(ENV_LD_LIBRARY_PATH, selectedOracleHome + File.separator + LIB_DIR);
+			envVars.put(ENV_TNS_ADMIN, selectedOracleHome + File.separator + NET_DIR);
 
 			// create command arguments
 			ArgumentListBuilder args = new ArgumentListBuilder();
@@ -216,24 +221,31 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 			Process process = proc.start();
 			exitCode = process.waitFor();
 
-			new StreamCopyThread(Messages.SQLPlusRunner_errorLogRunner(),process.getErrorStream(),listener.getLogger(),false).start();
-			new StreamCopyThread(Messages.SQLPlusRunner_logRunner(),process.getInputStream(),listener.getLogger(),false).start();
+			new StreamCopyThread(Messages.SQLPlusRunner_errorLogRunner(), process.getErrorStream(),
+					listener.getLogger(), false).start();
+			new StreamCopyThread(Messages.SQLPlusRunner_logRunner(), process.getInputStream(), listener.getLogger(),
+					false).start();
 
-			listener.getLogger().printf(Messages.SQLPlusRunner_processEnd() + " %d%n",exitCode);
+			listener.getLogger().printf(Messages.SQLPlusRunner_processEnd() + " %d%n", exitCode);
 
+		} catch (RuntimeException e) {
+		    throw e;
 		} catch (Exception e) {
 			listener.getLogger().println(MSG_ERROR + e.getMessage());
 			throw new RuntimeException(e);
 		} finally {
-			if (tempScript!=null) {
-				try{
-				File f = new File(tempScript);
-				f.delete();
-				} catch (Exception e) {}
+			if (tempScript != null) {
+				try {
+					File f = new File(tempScript);
+					boolean removed = f.delete();
+					if (!removed)
+						listener.getLogger().printf(Messages.SQLPlusRunner_tempFileNotRemoved());
+				} catch (Exception e) {
+				}
 			}
 		}
 
-		if (exitCode!=PROCESS_EXIT_CODE_SUCCESSFUL) {
+		if (exitCode != PROCESS_EXIT_CODE_SUCCESSFUL) {
 			throw new RuntimeException(Messages.SQLPlusRunner_processErrorEnd());
 		}
 
@@ -241,12 +253,16 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		return null;
 	}
 
-	public void runGetSQLPLusVersion(String oracleHome,BuildListener listener) {
+	public void runGetSQLPLusVersion(String oracleHome, BuildListener listener) {
 
-		if (oracleHome == null || oracleHome.length() < 1) { throw new RuntimeException(MSG_ORACLE_HOME_MISSING); }
+		if (oracleHome == null || oracleHome.length() < 1) {
+			throw new RuntimeException(MSG_ORACLE_HOME_MISSING);
+		}
 
 		File directoryAccessTest = new File(oracleHome);
-		if (!directoryAccessTest.exists()) { throw new RuntimeException(Messages.SQLPlusRunner_wrongOracleHome(oracleHome)); }
+		if (!directoryAccessTest.exists()) {
+			throw new RuntimeException(Messages.SQLPlusRunner_wrongOracleHome(oracleHome));
+		}
 
 		listener.getLogger().println(LINE);
 		listener.getLogger().println(MSG_ORACLE_HOME + oracleHome);
@@ -254,8 +270,8 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		listener.getLogger().println(MSG_GET_SQL_PLUS_VERSION);
 		try {
 			EnvVars envVars = new EnvVars();
-			envVars.put(ENV_ORACLE_HOME,oracleHome);
-			envVars.put(ENV_LD_LIBRARY_PATH,oracleHome + File.separator + LIB_DIR);
+			envVars.put(ENV_ORACLE_HOME, oracleHome);
+			envVars.put(ENV_LD_LIBRARY_PATH, oracleHome + File.separator + LIB_DIR);
 
 			// create command arguments
 			ArgumentListBuilder args = new ArgumentListBuilder();
@@ -274,10 +290,12 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 			Process process = proc.start();
 			int exitCode = process.waitFor();
 
-			new StreamCopyThread(Messages.SQLPlusRunner_errorLogVersion(),process.getErrorStream(),listener.getLogger(),false).start();
-			new StreamCopyThread(Messages.SQLPlusRunner_logVersion(),process.getInputStream(),listener.getLogger(),false).start();
+			new StreamCopyThread(Messages.SQLPlusRunner_errorLogVersion(), process.getErrorStream(),
+					listener.getLogger(), false).start();
+			new StreamCopyThread(Messages.SQLPlusRunner_logVersion(), process.getInputStream(), listener.getLogger(),
+					false).start();
 
-			listener.getLogger().printf(Messages.SQLPlusRunner_processEnd() + " %d%n",exitCode);
+			listener.getLogger().printf(Messages.SQLPlusRunner_processEnd() + " %d%n", exitCode);
 
 		} catch (Exception e) {
 			listener.getLogger().println(MSG_ERROR + e.getMessage());
@@ -286,45 +304,6 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		listener.getLogger().println(LINE);
 	}
 
-	private String createTempScript(String content) {
-
-		String tempFile = "";
-		try {
-
-			File file = File.createTempFile(SQL_TEMP_SCRIPT + System.currentTimeMillis(),SQL_PREFIX);
-
-			if (!FileUtil.hasExitCode(file))
-			  addExit(content,file);
-
-			tempFile = file.getPath();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return tempFile;
-
-	}
-
-	private void addExit(String content,File file) throws IOException {
-
-		BufferedWriter bw = null;
-		try {
-
-			FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
-			bw = new BufferedWriter(fw);
-			if (content != null) {
-				bw.write(content);
-			}
-			bw.write(SQLPLUS_EXIT);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				bw.close();
-			} catch (IOException e) {}
-
-		}
-	}
 
 	private boolean isWindowsOS() {
 
