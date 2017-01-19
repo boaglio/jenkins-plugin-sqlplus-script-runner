@@ -5,8 +5,8 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.625.2</version>
-    <relativePath />
+    <version>2.11</version>
+    <relativePath/>
   </parent>
   <artifactId>sqlplus-script-runner</artifactId>
   <version>1.0.5-SNAPSHOT</version>
@@ -37,7 +37,7 @@
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    <tag>sqlplus-script-runner-1.0.3</tag>
+    <tag>sqlplus-script-runner-1.0.4</tag>
   </scm>
   <repositories>
     <repository>
