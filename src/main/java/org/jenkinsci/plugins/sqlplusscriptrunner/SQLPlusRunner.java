@@ -76,6 +76,8 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 	private static final String SQLPLUS_EXIT = EOL + "exit;" + EOL + "exit;";
 	private static final String SQLPLUS_VERSION = "-v";
 
+	private static final int PROCESS_EXIT_CODE_SUCCESSFUL = 0;
+
 	public SQLPlusRunner(BuildListener listener,boolean isHideSQLPlusVersion,String user,String password,String instance,String script,String oracleHome,String scriptType,String customOracleHome,boolean tryToDetectOracleHome) {
 		this.listener = listener;
 		this.isHideSQLPlusVersion = isHideSQLPlusVersion;
@@ -157,9 +159,11 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		listener.getLogger().println(MSG_ORACLE_HOME + selectedOracleHome);
 		listener.getLogger().println(LINE);
 
+		String tempScript = null;
 		if (ScriptType.userDefined.name().equals(scriptType)) {
 			listener.getLogger().println(MSG_DEFINED_SCRIPT + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
 			script = createTempScript(script);
+			tempScript = script;
 			listener.getLogger().println(MSG_TEMP_SCRIPT + script);
 		} else {
 			listener.getLogger().println(MSG_SCRIPT + " " + path + File.separator + script + " " + ON + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
@@ -171,6 +175,7 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 
 		listener.getLogger().println(LINE);
 
+		int exitCode = 0;
 		try {
 			// and the extra ones for the plugin
 			EnvVars envVars = new EnvVars();
@@ -209,15 +214,27 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 			proc.directory(path);
 
 			Process process = proc.start();
-			int exitCode = process.waitFor();
+			exitCode = process.waitFor();
 
 			new StreamCopyThread(Messages.SQLPlusRunner_errorLogRunner(),process.getErrorStream(),listener.getLogger(),false).start();
 			new StreamCopyThread(Messages.SQLPlusRunner_logRunner(),process.getInputStream(),listener.getLogger(),false).start();
 
 			listener.getLogger().printf(Messages.SQLPlusRunner_processEnd() + " %d%n",exitCode);
+
 		} catch (Exception e) {
 			listener.getLogger().println(MSG_ERROR + e.getMessage());
 			throw new RuntimeException(e);
+		} finally {
+			if (tempScript!=null) {
+				try{
+				File f = new File(tempScript);
+				f.delete();
+				} catch (Exception e) {}
+			}
+		}
+
+		if (exitCode!=PROCESS_EXIT_CODE_SUCCESSFUL) {
+			throw new RuntimeException(Messages.SQLPlusRunner_processErrorEnd());
 		}
 
 		listener.getLogger().println(LINE);
