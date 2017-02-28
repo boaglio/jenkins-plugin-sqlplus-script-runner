@@ -11,8 +11,8 @@
   </f:entry>
   <f:entry name="scriptType" title="${%Script Type to run}" field="scriptType">
     <select name="scriptType">
-        <option value="file">${%File Script}</option>
-        <option value="userDefined">${%User Defined Script}</option>
+     <f:option value="file"        selected="${instance.scriptType == 'file'}"       >${%File Script}</f:option>
+     <f:option value="userDefined" selected="${instance.scriptType == 'userDefined'}">${%User Defined Script}</f:option>
     </select>
   </f:entry>
   <f:entry title="${%File Script}" field="script">
