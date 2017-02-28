@@ -38,3 +38,15 @@ https://github.com/boaglio/jenkins-plugin-sqlplus-script-runner/releases
 7. Run it with  mvn clean -DskipTests hpi:run
 8. Try it at http://localhost:8080
 9. Commit and submit pull request
+
+# Having problems?
+
+Please [open a new issue](https://github.com/jenkinsci/sqlplus-script-runner-plugin/issues/new)  and inform:
+
+- Jenkins server Operation System;
+- Jenkins version ;
+- Where SQLPlus Script Runner is running (local machine or slave machine);
+- Slave machine Operation System (if applicable);
+- Oracle Database version;
+- Oracle SQL*Plus version.
+
