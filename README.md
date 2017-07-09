@@ -23,7 +23,11 @@ https://github.com/boaglio/jenkins-plugin-sqlplus-script-runner/releases
 
 1. Fork repository
 2. Code code code
-3. Run it with  mvn clean -DskipTests hpi:run
+3. Run it with:
+ mvn clean
+ mvn generate-sources  (convert Message*.properties into Messages.java)
+ mvn compiler:compile
+ mvn -DskipTests hpi:run
 4. Try it at http://localhost:8080
 5. Commit and submit pull request
 
