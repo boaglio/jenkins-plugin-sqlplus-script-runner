@@ -65,16 +65,17 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 	private static final String ENV_TNS_ADMIN = "TNS_ADMIN";
 
 	private static final String SQLPLUS_TRY_LOGIN_JUST_ONCE = "-L";
+	private static final String SQLPLUS_VERSION = "-v";
 	private static final String SQLPLUS = "sqlplus";
 	private static final String SQLPLUS_FOR_WINDOWS = "sqlplus.exe";
 
-	private static final String SQLPLUS_VERSION = "-v";
+	private static final String TNSNAMES_ORA = "tnsnames.ora";
 
 	private static final int PROCESS_EXIT_CODE_SUCCESSFUL = 0;
 
 	public SQLPlusRunner(BuildListener listener, boolean isHideSQLPlusVersion, String user, String password,
 			String instance, String script, String oracleHome, String scriptType, String customOracleHome,
-			boolean tryToDetectOracleHome) {
+			boolean tryToDetectOracleHome,boolean debug) {
 		this.listener = listener;
 		this.isHideSQLPlusVersion = isHideSQLPlusVersion;
 		this.user = user;
@@ -85,6 +86,7 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		this.scriptType = scriptType;
 		this.customOracleHome = customOracleHome;
 		this.tryToDetectOracleHome = tryToDetectOracleHome;
+		this.debug = debug;
 	}
 
 	private final BuildListener listener;
@@ -107,6 +109,8 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 
 	private final boolean tryToDetectOracleHome;
 
+	private final boolean debug;
+
 	@Override
 	public Void invoke(File path, VirtualChannel channel) throws IOException, InterruptedException {
 
@@ -117,21 +121,25 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		listener.getLogger().println(MSG_GET_ORACLE_HOME);
 		// custom ORACLE_HOME overrides everything
 		if (customOracleHome != null && customOracleHome.length() > 0) {
+			if (debug) listener.getLogger().println("custom ORACLE_HOME selected");
 			listener.getLogger().println(LINE);
 			listener.getLogger().println(MSG_CUSTOM_ORACLE_HOME);
 			selectedOracleHome = customOracleHome;
 			// global ORACLE_HOME comes next
 		} else if (oracleHome != null && oracleHome.length() > 0) {
+			if (debug) listener.getLogger().println("global ORACLE_HOME selected");
 			listener.getLogger().println(LINE);
 			listener.getLogger().println(MSG_GLOBAL_ORACLE_HOME);
 			selectedOracleHome = oracleHome;
 			// now try to detect ORACLE_HOME
 		} else if (tryToDetectOracleHome && detectedOracleHome != null) {
+			if (debug) listener.getLogger().println("try to detect ORACLE_HOME selected");
 			listener.getLogger().println(LINE);
 			listener.getLogger().println(MSG_DETECTED_ORACLE_HOME);
 			selectedOracleHome = detectedOracleHome;
 		} else {
 			// nothing works, get global ORACLE_HOME
+			if (debug) listener.getLogger().println("global ORACLE_HOME selected anyway");
 			selectedOracleHome = oracleHome;
 		}
 
@@ -144,6 +152,7 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		}
 
 		File directoryAccessTest = new File(selectedOracleHome);
+		if (debug) listener.getLogger().println("testing directory "+directoryAccessTest.getAbsolutePath());
 		if (!directoryAccessTest.exists()) {
 			throw new RuntimeException(Messages.SQLPlusRunner_wrongOracleHome(selectedOracleHome));
 		}
@@ -166,11 +175,12 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 			listener.getLogger().println(MSG_DEFINED_SCRIPT + " " + user + SLASH + HIDDEN_PASSWORD + AT + instanceStr);
 			script = FileUtil.createTempScript(script);
 			tempScript = script;
-			listener.getLogger().println(MSG_TEMP_SCRIPT + script);
+			listener.getLogger().println(MSG_TEMP_SCRIPT + " "+ script);
 		} else {
 			listener.getLogger().println(MSG_SCRIPT + " " + path + File.separator + script + " " + ON + " " + user
 					+ SLASH + HIDDEN_PASSWORD + AT + instanceStr);
 			File scriptFile = new File(path + File.separator + script);
+			if (debug) listener.getLogger().println("testing script "+scriptFile.getAbsolutePath());
 			if (!scriptFile.exists()) {
 				throw new RuntimeException(Messages.SQLPlusRunner_missingScript(path + File.separator + script));
 			}
@@ -184,9 +194,26 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		try {
 			// and the extra ones for the plugin
 			EnvVars envVars = new EnvVars();
+			File workDirectory = path;
 			envVars.put(ENV_ORACLE_HOME, selectedOracleHome);
-			envVars.put(ENV_LD_LIBRARY_PATH, selectedOracleHome + File.separator + LIB_DIR);
-			envVars.put(ENV_TNS_ADMIN, selectedOracleHome + File.separator + NET_DIR);
+			if (debug) listener.getLogger().println("ORACLE_HOME = "+selectedOracleHome);
+			envVars.put(ENV_LD_LIBRARY_PATH, selectedOracleHome + File.separator + LIB_DIR+File.pathSeparator+selectedOracleHome);
+			if (debug) listener.getLogger().println("LD_LIBRARY_PATH = "+ selectedOracleHome + File.separator + LIB_DIR+File.pathSeparator+selectedOracleHome);
+
+			boolean findTNSNAMESOracleHome = FileUtil.findFile( TNSNAMES_ORA ,new File(selectedOracleHome));
+			boolean findTNSNAMESOracleHomeNetworkAdmin = FileUtil.findFile( TNSNAMES_ORA ,new File(selectedOracleHome + File.separator + NET_DIR));
+			if (findTNSNAMESOracleHomeNetworkAdmin) {
+			 envVars.put(ENV_TNS_ADMIN, selectedOracleHome + File.separator + NET_DIR);
+			 if (debug) listener.getLogger().println("found TNSNAMES.ORA on "+new File(selectedOracleHome + File.separator + NET_DIR).getAbsolutePath());
+			 if (debug) listener.getLogger().println("TNS_ADMIN = "+selectedOracleHome + File.separator + NET_DIR );
+			} else if (findTNSNAMESOracleHome) {
+			 envVars.put(ENV_TNS_ADMIN, selectedOracleHome);
+			 if (debug) listener.getLogger().println("found TNSNAMES.ORA on "+new File(selectedOracleHome).getAbsolutePath());
+			 if (debug) listener.getLogger().println("TNS_ADMIN = "+selectedOracleHome);
+			 workDirectory = new File(selectedOracleHome);
+			} else {
+				throw new RuntimeException(Messages.SQLPlusRunner_missingTNSNAMES());
+			}
 
 			// create command arguments
 			ArgumentListBuilder args = new ArgumentListBuilder();
@@ -207,16 +234,41 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 			if (isWindowsOS()) {
 				sqlplus = SQLPLUS_FOR_WINDOWS;
 			}
+			listener.getLogger().println("Work Directory = "+ workDirectory);
+			listener.getLogger().println("SQL*Plus exec file = "+sqlplus);
 
-			args.add(selectedOracleHome + File.separator + BIN_DIR + File.separator + sqlplus);
+			boolean findSQLPlusOnOracleHomeBin = FileUtil.findFile( sqlplus ,new File(selectedOracleHome + File.separator + BIN_DIR));
+
+			boolean findSQLPlusOnOracleHome = FileUtil.findFile( sqlplus ,new File(selectedOracleHome));
+
+			if (findSQLPlusOnOracleHomeBin) {
+				if (debug) listener.getLogger().println("found SQL*Plus on "+new File(selectedOracleHome + File.separator + BIN_DIR).getAbsolutePath());
+				args.add(selectedOracleHome + File.separator + BIN_DIR + File.separator + sqlplus);
+			} else if (findSQLPlusOnOracleHome) {
+				if (debug) listener.getLogger().println("found SQL*Plus on "+new File(selectedOracleHome).getAbsolutePath());
+				args.add(selectedOracleHome + File.separator + File.separator + sqlplus);
+			} else {
+				throw new RuntimeException(Messages.SQLPlusRunner_missingSQLPlus());
+			}
+
 			args.add(SQLPLUS_TRY_LOGIN_JUST_ONCE);
 			args.add(arg1);
 			args.add(AT + arg2);
 
+			if (debug) {
+			 listener.getLogger().println(" Statement: ");
+			 listener.getLogger().println(LINE);
+			 for (String a: args.toList()) {
+				listener.getLogger().print(a+" ");
+			 }
+			 listener.getLogger().println(LINE);
+			 listener.getLogger().println(" ");
+			}
+
 			ProcessBuilder proc = new ProcessBuilder(args.toList());
 			proc.environment().putAll(envVars);
 			proc.redirectErrorStream(true);
-			proc.directory(path);
+			proc.directory(workDirectory);
 
 			Process process = proc.start();
 			exitCode = process.waitFor();
@@ -246,6 +298,9 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		}
 
 		if (exitCode != PROCESS_EXIT_CODE_SUCCESSFUL) {
+			listener.getLogger().println(LINE);
+			listener.getLogger().println("Exit code: "+exitCode);
+			listener.getLogger().println(LINE);
 			throw new RuntimeException(Messages.SQLPlusRunner_processErrorEnd());
 		}
 
@@ -271,7 +326,9 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 		try {
 			EnvVars envVars = new EnvVars();
 			envVars.put(ENV_ORACLE_HOME, oracleHome);
+			if (debug) listener.getLogger().println("ORACLE_HOME = "+oracleHome);
 			envVars.put(ENV_LD_LIBRARY_PATH, oracleHome + File.separator + LIB_DIR);
+			if (debug) listener.getLogger().println("LD_LIBRARY_PATH = "+oracleHome + File.separator + LIB_DIR);
 
 			// create command arguments
 			ArgumentListBuilder args = new ArgumentListBuilder();
@@ -281,8 +338,33 @@ public class SQLPlusRunner extends MasterToSlaveFileCallable<Void> {
 				sqlplus = SQLPLUS_FOR_WINDOWS;
 			}
 
-			args.add(oracleHome + File.separator + BIN_DIR + File.separator + sqlplus);
+			listener.getLogger().println("SQL*Plus exec file = "+sqlplus);
+
+			boolean findSQLPlusOnOracleHomeBin = FileUtil.findFile( sqlplus ,new File(oracleHome + File.separator + BIN_DIR));
+
+			boolean findSQLPlusOnOracleHome = FileUtil.findFile( sqlplus ,new File(oracleHome));
+
+			if (findSQLPlusOnOracleHomeBin) {
+				listener.getLogger().println("found SQL*Plus on "+new File(oracleHome + File.separator + BIN_DIR).getAbsolutePath());
+				args.add(oracleHome + File.separator + BIN_DIR + File.separator + sqlplus);
+			} else if (findSQLPlusOnOracleHome) {
+				listener.getLogger().println("found SQL*Plus on "+new File(oracleHome).getAbsolutePath());
+				args.add(oracleHome + File.separator + File.separator + sqlplus);
+			} else {
+				throw new RuntimeException(Messages.SQLPlusRunner_missingSQLPlus());
+			}
+
 			args.add(SQLPLUS_VERSION);
+
+			if (debug) {
+ 			 listener.getLogger().println(LINE);
+			 listener.getLogger().println("Statement:");
+			 for (String a: args.toList()) {
+				listener.getLogger().print(a+" ");
+			 }
+			 listener.getLogger().println(" ");
+			 listener.getLogger().println(LINE);
+			}
 
 			ProcessBuilder proc = new ProcessBuilder(args.toList());
 			proc.environment().putAll(envVars);

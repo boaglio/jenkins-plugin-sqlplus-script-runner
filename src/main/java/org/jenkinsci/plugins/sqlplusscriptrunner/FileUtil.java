@@ -92,4 +92,19 @@ public class FileUtil {
 
 	}
 
+	public static boolean findFile(String name, File file) {
+
+		boolean found = false;
+		File[] list = file.listFiles();
+		if (list != null)
+			for (File fil : list) {
+				if (fil.isDirectory()) {
+					findFile(name, fil);
+				} else if (name.equalsIgnoreCase(fil.getName())) {
+					found = true;
+				}
+			}
+		return found;
+	}
+
 }

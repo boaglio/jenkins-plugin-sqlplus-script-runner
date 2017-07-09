@@ -85,7 +85,7 @@ public class SQLPlusRunnerBuilder extends Builder {
 
 		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener, getDescriptor().isHideSQLPlusVersion(), user,
 				password, instance, sqlScript, getDescriptor().oracleHome, scriptType, customOracleHome,
-				getDescriptor().tryToDetectOracleHome);
+				getDescriptor().tryToDetectOracleHome,getDescriptor().isDebug());
 
 		try {
 			// The FilePath executing this callable can be used in the #invoke
@@ -121,8 +121,10 @@ public class SQLPlusRunnerBuilder extends Builder {
 		private static final String ORACLE_HOME = "oracleHome";
 		private static final String HIDE_SQL_PLUS_VERSION = "hideSQLPlusVersion";
 		private static final String TRY_TO_DETECT_ORACLE_HOME = "tryToDetectOracleHome";
+		private static final String DEBUG = "debug";
 		private boolean hideSQLPlusVersion;
 		private boolean tryToDetectOracleHome;
+		private boolean debug;
 		private String oracleHome;
 
 		public DescriptorImpl() {
@@ -145,6 +147,7 @@ public class SQLPlusRunnerBuilder extends Builder {
 			hideSQLPlusVersion = formData.getBoolean(HIDE_SQL_PLUS_VERSION);
 			oracleHome = formData.getString(ORACLE_HOME);
 			tryToDetectOracleHome = formData.getBoolean(TRY_TO_DETECT_ORACLE_HOME);
+			debug = formData.getBoolean(DEBUG);
 			save();
 			return super.configure(req, formData);
 		}
@@ -163,6 +166,14 @@ public class SQLPlusRunnerBuilder extends Builder {
 
 		public void setTryToDetectOracleHome(boolean tryToDetectOracleHome) {
 			this.tryToDetectOracleHome = tryToDetectOracleHome;
+		}
+
+		public boolean isDebug() {
+			return debug;
+		}
+
+		public void setDebug(boolean debug) {
+			this.debug = debug;
 		}
 
 		public String getOracleHome() {
