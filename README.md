@@ -52,5 +52,6 @@ Please [open a new issue](https://github.com/jenkinsci/sqlplus-script-runner-plu
 - Where SQLPlus Script Runner is running (local machine or slave machine);
 - Slave machine Operation System (if applicable);
 - Oracle Database version;
-- Oracle SQL*Plus version.
+- Oracle SQL*Plus version;
+- Build log with debug info enabled.
 
