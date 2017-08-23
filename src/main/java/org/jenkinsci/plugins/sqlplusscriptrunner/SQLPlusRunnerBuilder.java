@@ -83,7 +83,7 @@ public class SQLPlusRunnerBuilder extends Builder {
 		EnvVars env = build.getEnvironment(listener);
 		sqlScript = env.expand(sqlScript);
 
-		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener, getDescriptor().isHideSQLPlusVersion(), user,
+		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener, getDescriptor().isHideSQLPlusVersion(), env.expand(user),
 				password, instance, sqlScript, getDescriptor().oracleHome, scriptType, customOracleHome,
 				getDescriptor().tryToDetectOracleHome,getDescriptor().isDebug());
 
