@@ -20,6 +20,7 @@ import net.sf.json.JSONObject;
 
 public class SQLPlusRunnerBuilder extends Builder {
 
+	private static final String SLASH = "/";
 	private final String user;
 	private final String password;
 	private final String instance;
@@ -82,9 +83,17 @@ public class SQLPlusRunnerBuilder extends Builder {
 
 		EnvVars env = build.getEnvironment(listener);
 
-		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener, getDescriptor().isHideSQLPlusVersion(),env.expand(user),
-				password, env.expand(instance), env.expand(sqlScript), getDescriptor().oracleHome, scriptType, customOracleHome,
-				getDescriptor().tryToDetectOracleHome,getDescriptor().isDebug());
+		String usr = env.expand(user);
+		String pwd = password;
+		int positionSlash = usr.indexOf(SLASH);
+		if (positionSlash > 0) {
+			pwd = usr.substring(positionSlash+1);
+			usr = usr.substring(0, positionSlash);
+		}
+
+		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener, getDescriptor().isHideSQLPlusVersion(), usr, pwd,
+				env.expand(instance), env.expand(sqlScript), getDescriptor().oracleHome, scriptType, customOracleHome,
+				getDescriptor().tryToDetectOracleHome, getDescriptor().isDebug());
 
 		try {
 			// The FilePath executing this callable can be used in the #invoke
