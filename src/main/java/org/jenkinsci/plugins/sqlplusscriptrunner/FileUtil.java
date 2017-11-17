@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 public class FileUtil {
 
 	private static final String DEFAULT_ENCODE = "UTF-8";
+	private static final String LAST_CMD_BEFORE_EXIT = ";\n";
 	private static final String SQLPLUS_EXIT = "exit;";
 	private static final String SQL_TEMP_SCRIPT = "temp-script-";
 	private static final String SQL_PREFIX = ".sql";
@@ -58,6 +59,7 @@ public class FileUtil {
 			PrintWriter pw = new PrintWriter(w);
 			if (content != null)
 				pw.println(content);
+			pw.println(LAST_CMD_BEFORE_EXIT);
 			pw.println(SQLPLUS_EXIT);
 			pw.close();
 
