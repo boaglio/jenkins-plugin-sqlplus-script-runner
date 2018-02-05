@@ -16,6 +16,9 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import net.sf.json.JSONObject;
 
+import edu.umd.cs.findbugs.annotations.*;
+
+@SuppressFBWarnings
 public class SQLPlusRunnerBuilder extends Builder {
 
 	private static final String SLASH = "/";
@@ -79,9 +82,8 @@ public class SQLPlusRunnerBuilder extends Builder {
 		return customTNSAdmin;
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
-	public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
+	public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
 			throws InterruptedException, IOException {
 
 		String sqlScript;
@@ -140,7 +142,6 @@ public class SQLPlusRunnerBuilder extends Builder {
 			load();
 		}
 
-		@SuppressWarnings("rawtypes")
 		@Override
 		public boolean isApplicable(Class<? extends AbstractProject> aClass) {
 			return true;
