@@ -1,12 +1,15 @@
 package org.jenkinsci.plugins.sqlplusscriptrunner.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.jenkinsci.plugins.sqlplusscriptrunner.FileUtil;
 import org.junit.Test;
+
+import hudson.FilePath;
 
 public class TestFileUtil {
 
@@ -21,7 +24,7 @@ public class TestFileUtil {
 
 		File file = new File(WORK_DIR+File.separator+SCRIPT_SQL);
 
-		boolean hasExit = FileUtil.hasExitCode(file);
+		boolean hasExit = FileUtil.hasExitCode(new FilePath(file));
 
 		System.out.println("hasExit = " + hasExit);
 
@@ -34,7 +37,7 @@ public class TestFileUtil {
 
 		File file = new File(WORK_DIR+File.separator+SCRIPT2_SQL);
 
-		boolean hasExit = FileUtil.hasExitCode(file);
+		boolean hasExit = FileUtil.hasExitCode(new FilePath(file));
 
 		System.out.println("hasNoExit = " + hasExit);
 

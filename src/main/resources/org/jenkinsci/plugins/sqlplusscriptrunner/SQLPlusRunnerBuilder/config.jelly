@@ -24,4 +24,10 @@
   <f:entry title="${%Custom ORACLE_HOME}" field="customOracleHome" >
     <f:textbox />
   </f:entry>
+  <f:entry title="${%Custom SQLPLUS_HOME}" field="customSQLPlusHome" >
+    <f:textbox />
+  </f:entry>
+  <f:entry title="${%Custom TNS_ADMIN}" field="customTNSAdmin" >
+    <f:textbox />
+  </f:entry>
 </j:jelly>

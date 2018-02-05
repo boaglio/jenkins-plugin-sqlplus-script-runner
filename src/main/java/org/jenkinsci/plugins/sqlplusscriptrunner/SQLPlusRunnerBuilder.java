@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.sqlplusscriptrunner;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -9,7 +8,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -28,10 +26,12 @@ public class SQLPlusRunnerBuilder extends Builder {
 	private final String script;
 	private final String scriptContent;
 	private final String customOracleHome;
+	private final String customSQLPlusHome;
+	private final String customTNSAdmin;
 
 	@DataBoundConstructor
 	public SQLPlusRunnerBuilder(String user, String password, String instance, String scriptType, String script,
-			String scriptContent, String customOracleHome) {
+			String scriptContent, String customOracleHome,String customSQLPlusHome,String customTNSAdmin) {
 		this.user = user;
 		this.password = password;
 		this.instance = instance;
@@ -39,6 +39,8 @@ public class SQLPlusRunnerBuilder extends Builder {
 		this.script = script;
 		this.scriptContent = scriptContent;
 		this.customOracleHome = customOracleHome;
+		this.customSQLPlusHome = customSQLPlusHome;
+		this.customTNSAdmin = customTNSAdmin;
 	}
 
 	public String getUser() {
@@ -69,6 +71,14 @@ public class SQLPlusRunnerBuilder extends Builder {
 		return customOracleHome;
 	}
 
+	public String getCustomSQLPlusHome() {
+		return customSQLPlusHome;
+	}
+
+	public String getCustomTNSAdmin() {
+		return customTNSAdmin;
+	}
+
 	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener)
@@ -87,29 +97,20 @@ public class SQLPlusRunnerBuilder extends Builder {
 		String pwd = password;
 		int positionSlash = usr.indexOf(SLASH);
 		if (positionSlash > 0) {
-			pwd = usr.substring(positionSlash+1);
+			pwd = usr.substring(positionSlash + 1);
 			usr = usr.substring(0, positionSlash);
 		}
 
-		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(listener, getDescriptor().isHideSQLPlusVersion(), usr, pwd,
-				env.expand(instance), env.expand(sqlScript), getDescriptor().oracleHome, scriptType, customOracleHome,
-				getDescriptor().tryToDetectOracleHome, getDescriptor().isDebug());
+		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(build,listener, launcher, getDescriptor().isHideSQLPlusVersion(), usr,
+				pwd, env.expand(instance), env.expand(sqlScript), getDescriptor().oracleHome, scriptType,
+				customOracleHome,customSQLPlusHome,customTNSAdmin, getDescriptor().tryToDetectOracleHome, getDescriptor().isDebug());
 
 		try {
-			// The FilePath executing this callable can be used in the #invoke
-			// method to get access to
-			// the virtual file. Operations will happen either on the slave or
-			// on the master node, and results
-			// will be serialized back to the master.
-			FilePath fp = build.getWorkspace();
-			if (fp != null)
-				fp.act(Objects.requireNonNull(sqlPlusRunner));
-			else
-				throw new AbortException("Filepath null!");
+
+			sqlPlusRunner.run();
+
 		} catch (Exception e) {
-			// Either throw an abort exception, or just log the error, set build
-			// result to failure or unstable
-			// and then proceed with other build steps.
+
 			e.printStackTrace(listener.getLogger());
 			throw new AbortException(e.getMessage());
 		}
