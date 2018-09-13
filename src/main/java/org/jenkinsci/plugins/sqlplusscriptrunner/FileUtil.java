@@ -13,6 +13,7 @@ import hudson.model.AbstractBuild;
 
 public class FileUtil {
 
+	private static final int SQLPLUS_STR_LENGTH = 5;
 	private static final String LAST_CMD_BEFORE_EXIT = "\n;\n";
 	private static final String SQLPLUS_EXIT = "exit;";
 	private static final String SQL_TEMP_SCRIPT = "temp-script-";
@@ -30,11 +31,11 @@ public class FileUtil {
 			String lastLine = "";
 			String line;
 			while ((line = br.readLine()) != null) {
-				if (line.length() >= 5)
+				if (line.length() >= SQLPLUS_STR_LENGTH)
 					lastLine = line;
 			}
 
-			if (lastLine.equalsIgnoreCase(SQLPLUS_EXIT))
+			if (lastLine.trim().equalsIgnoreCase(SQLPLUS_EXIT))
 				found = true;
 
 			br.close();
@@ -65,7 +66,9 @@ public class FileUtil {
 	public static void addExitInTheEnd(FilePath filePath) throws IOException {
 
 		try {
-			filePath.write( LAST_CMD_BEFORE_EXIT + SQLPLUS_EXIT, StandardCharsets.UTF_8.name());
+			
+            String content = filePath.readToString();                        
+            filePath.write(content + LAST_CMD_BEFORE_EXIT + SQLPLUS_EXIT, StandardCharsets.UTF_8.name());
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}

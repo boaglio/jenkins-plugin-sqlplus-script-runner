@@ -28,7 +28,7 @@ https://github.com/boaglio/jenkins-plugin-sqlplus-script-runner/releases
 * mvn clean
 * mvn generate-sources  (convert Message*.properties into Messages.java)
 * mvn compiler:compile
-* mvn -DskipTests hpi:run
+* mvn clean -DskipTests package hpi:run
 
 4. Try it at http://localhost:8080
 5. Commit and submit pull request
@@ -43,7 +43,7 @@ https://github.com/boaglio/jenkins-plugin-sqlplus-script-runner/releases
 6. Translate it
 7. Run it with:
 
-* mvn clean -DskipTests hpi:run
+* mvn clean -DskipTests package hpi:run
 
 8. Try it at http://localhost:8080
 9. Commit and submit pull request

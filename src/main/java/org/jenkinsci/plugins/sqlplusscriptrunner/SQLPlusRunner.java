@@ -143,14 +143,14 @@ public class SQLPlusRunner implements Serializable {
 		listener.getLogger().println(MSG_GET_ORACLE_HOME);
 
 		// custom SQLPLUS_HOME overrides file location
-		if (customSQLPlusHome != null) {
+		if (customSQLPlusHome != null && customSQLPlusHome.length() > 0) {
 			listener.getLogger().println(MSG_CUSTOM_SQLPLUS_HOME);
 			listener.getLogger().println("SQL*Plus >>> " + customSQLPlusHome);
 		}
 
 		// custom TNS_ADMIN
 		boolean hasCustomTNSAdmin = false;
-		if (customTNSAdmin != null) {
+		if (customTNSAdmin != null && customTNSAdmin.length() > 0) {
 			listener.getLogger().println(MSG_CUSTOM_TNS_ADMIN);
 			listener.getLogger().println("TNS_ADMIN >>> " + customTNSAdmin);
 			hasCustomTNSAdmin = true;
@@ -198,7 +198,7 @@ public class SQLPlusRunner implements Serializable {
 		}
 
 		boolean hasCustomSQLPlusHome = false;
-		if (customSQLPlusHome != null) {
+		if (customSQLPlusHome != null && customSQLPlusHome.length()>0) {
 			hasCustomSQLPlusHome = true;
 		}
 
@@ -402,7 +402,7 @@ public class SQLPlusRunner implements Serializable {
 		}
 
 		boolean hasCustomSQLPlusHome = false;
-		if (customSQLPlusHome != null) {
+		if (customSQLPlusHome != null && customSQLPlusHome.length()>0) {
 			hasCustomSQLPlusHome = true;
 		}
 
