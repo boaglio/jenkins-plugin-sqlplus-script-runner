@@ -1,18 +1,20 @@
-package org.jenkinsci.plugins.sqlplusscriptrunner;
+package org.jenkinsci.plugins.sqlplus.script.runner;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.jenkinsci.plugins.sqlplusscriptrunner.Messages;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.BuildListener;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ArgumentListBuilder;
-import edu.umd.cs.findbugs.annotations.*;
 
 /**
  * Run SQLPlus commands on the slave, or master of Jenkins.
@@ -83,7 +85,7 @@ public class SQLPlusRunner implements Serializable {
 
 	private static final int PROCESS_EXIT_CODE_SUCCESSFUL = 0;
 
-	public SQLPlusRunner(AbstractBuild<?, ?> build, BuildListener listener, Launcher launcher,
+	public SQLPlusRunner(Run<?, ?> build, TaskListener listener, Launcher launcher,
 			boolean isHideSQLPlusVersion, String user, String password, String instance, String script,
 			String oracleHome, String scriptType, String customOracleHome, String customSQLPlusHome,
 			String customTNSAdmin, boolean tryToDetectOracleHome, boolean debug) {
@@ -104,9 +106,9 @@ public class SQLPlusRunner implements Serializable {
 		this.debug = debug;
 	}
 
-	private final AbstractBuild<?, ?> build;
+	private final Run<?, ?> build;
 
-	private final BuildListener listener;
+	private final TaskListener listener;
 
 	private final Launcher launcher;
 
@@ -213,7 +215,7 @@ public class SQLPlusRunner implements Serializable {
 		}
 
 		if (script == null || script.length() < 1) {
-			throw new RuntimeException(Messages.SQLPlusRunner_missingScript(build.getModuleRoot().getRemote()));
+			throw new RuntimeException(Messages.SQLPlusRunner_missingScript(build.getRootDir()));
 		}
 
 		String instanceStr = LOCAL_DATABASE_MSG;
@@ -233,8 +235,8 @@ public class SQLPlusRunner implements Serializable {
 			tempScript = scriptFilePath;
 			listener.getLogger().println(MSG_TEMP_SCRIPT + " " + scriptFilePath.absolutize().toURI());
 		} else {
-			if (build.getWorkspace().getRemote() != null) {
-				String strScript = build.getWorkspace().getRemote() + File.separator + script;
+			if (build.getRootDir() != null) {
+				String strScript = build.getRootDir() + File.separator + script;
 				if (strScript != null)
 					scriptFilePath = new FilePath(new File(strScript));
 			}
@@ -311,7 +313,7 @@ public class SQLPlusRunner implements Serializable {
 			}
 
 			if (debug)
-				listener.getLogger().println("Work Directory = " + build.getModuleRoot().getRemote());
+				listener.getLogger().println("Work Directory = " + build.getRootDir());
 
 			if (hasCustomSQLPlusHome) {
 				args.add(customSQLPlusHome);
@@ -357,7 +359,7 @@ public class SQLPlusRunner implements Serializable {
 			}
 
 			exitCode = launcher.launch().cmds(args).envs(build.getEnvironment(listener)).stdout(listener)
-					.pwd(build.getModuleRoot()).join();
+					.pwd(build.getRootDir()).join();
 
 			listener.getLogger().printf(Messages.SQLPlusRunner_processEnd() + " %d%n", exitCode);
 
@@ -388,7 +390,7 @@ public class SQLPlusRunner implements Serializable {
 		listener.getLogger().println(LINE);
 	}
 
-	public void runGetSQLPLusVersion(String customSQLPlusHome, String oracleHome, BuildListener listener,
+	public void runGetSQLPLusVersion(String customSQLPlusHome, String oracleHome, TaskListener listener,
 			Launcher launcher) {
 
 		if (oracleHome == null || oracleHome.length() < 1) {
@@ -474,7 +476,7 @@ public class SQLPlusRunner implements Serializable {
 			}
 
 			int exitCode = launcher.launch().cmds(args).envs(build.getEnvironment(listener)).stdout(listener)
-					.pwd(build.getModuleRoot()).join();
+					.pwd(build.getRootDir() ).join();
 
 			listener.getLogger().printf(Messages.SQLPlusRunner_processEnd() + " %d%n", exitCode);
 
