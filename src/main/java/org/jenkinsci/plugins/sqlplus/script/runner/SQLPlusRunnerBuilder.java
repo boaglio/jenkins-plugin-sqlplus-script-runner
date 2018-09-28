@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.sqlplus.script.runner;
 import java.io.IOException;
 import java.util.List;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -39,6 +40,7 @@ import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 
 @SuppressFBWarnings
+@Symbol("sqlplusrunner")
 public class SQLPlusRunnerBuilder extends Builder implements SimpleBuildStep {
 
 	private final String credentialsId;

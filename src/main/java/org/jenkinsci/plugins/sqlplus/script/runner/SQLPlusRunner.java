@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.jenkinsci.plugins.sqlplusscriptrunner.Messages;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.FilePath;

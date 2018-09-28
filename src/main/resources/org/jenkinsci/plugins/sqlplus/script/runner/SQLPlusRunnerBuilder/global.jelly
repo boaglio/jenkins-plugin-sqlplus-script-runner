@@ -12,7 +12,7 @@
 	</f:entry>
 
 	<f:entry title="${%Try to detect ORACLE_HOME}" field="tryToDetectOracleHome">
-		<f:checkbox />
+		<f:checkbox default="true" />
 	</f:entry>
 
 	<f:entry title="${%Set global ORACLE_HOME}" field="oracleHome">

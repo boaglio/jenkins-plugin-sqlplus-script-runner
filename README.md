@@ -48,6 +48,13 @@ https://github.com/boaglio/jenkins-plugin-sqlplus-script-runner/releases
 8. Try it at http://localhost:8080
 9. Commit and submit pull request
 
+# Pipeline
+
+node {
+   echo 'SQLPlusRunner runnung user define script for system@xe'
+   step([$class: 'SQLPlusRunnerBuilder',credentialsId:'system', instance:'xe',scriptType:'userDefined', script: '',scriptContent: 'select * from v$version'])
+}
+
 # Having problems?
 
 Please [open a new issue](https://github.com/jenkinsci/sqlplus-script-runner-plugin/issues/new)  and inform:
