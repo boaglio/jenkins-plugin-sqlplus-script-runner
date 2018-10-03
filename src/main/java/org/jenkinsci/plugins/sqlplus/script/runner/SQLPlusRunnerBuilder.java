@@ -50,6 +50,7 @@ public class SQLPlusRunnerBuilder extends Builder implements SimpleBuildStep {
 	private final String scriptType;
 	private final String script;
 	private final String scriptContent;
+	
 	private   String customOracleHome;
 	private   String customSQLPlusHome;
 	private   String customTNSAdmin;
@@ -165,7 +166,7 @@ public class SQLPlusRunnerBuilder extends Builder implements SimpleBuildStep {
 
 		SQLPlusRunner sqlPlusRunner = new SQLPlusRunner(build, listener, launcher,
 				getDescriptor().isHideSQLPlusVersion(), usr, pwd, env.expand(instance), env.expand(sqlScript),
-				getDescriptor().oracleHome, scriptType, customOracleHome, customSQLPlusHome, customTNSAdmin,
+				getDescriptor().globalOracleHome,getDescriptor().globalSQLPlusHome ,getDescriptor().globalTNSAdmin, scriptType, customOracleHome, customSQLPlusHome, customTNSAdmin,
 				getDescriptor().tryToDetectOracleHome, getDescriptor().isDebug());
 
 		try {
@@ -189,15 +190,19 @@ public class SQLPlusRunnerBuilder extends Builder implements SimpleBuildStep {
 	public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
 		private static final String DISPLAY_MESSAGE = "SQLPlus Script Runner";
-		private static final String ORACLE_HOME = "oracleHome";
+		private static final String GLOBAL_ORACLE_HOME = "globalOracleHome";
+		private static final String GLOBAL_SQLPLUS_HOME = "globalSQLPlusHome";
+		private static final String GLOBAL_TNS_ADMIN = "globalTNSAdmin";
 		private static final String HIDE_SQL_PLUS_VERSION = "hideSQLPlusVersion";
 		private static final String TRY_TO_DETECT_ORACLE_HOME = "tryToDetectOracleHome";
 		private static final String DEBUG = "debug";
 		private boolean hideSQLPlusVersion;
 		private boolean tryToDetectOracleHome;
 		private boolean debug;
-		private String oracleHome;
-
+		private String globalOracleHome;
+		private String globalSQLPlusHome;
+		private String globalTNSAdmin;
+		
 		public DescriptorImpl() {
 			load();
 		}
@@ -215,7 +220,9 @@ public class SQLPlusRunnerBuilder extends Builder implements SimpleBuildStep {
 		@Override
 		public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
 			hideSQLPlusVersion = formData.getBoolean(HIDE_SQL_PLUS_VERSION);
-			oracleHome = formData.getString(ORACLE_HOME);
+			globalOracleHome = formData.getString(GLOBAL_ORACLE_HOME);
+			globalSQLPlusHome = formData.getString(GLOBAL_SQLPLUS_HOME);
+			globalTNSAdmin = formData.getString(GLOBAL_TNS_ADMIN);
 			tryToDetectOracleHome = formData.getBoolean(TRY_TO_DETECT_ORACLE_HOME);
 			debug = formData.getBoolean(DEBUG);
 			save();
@@ -247,11 +254,27 @@ public class SQLPlusRunnerBuilder extends Builder implements SimpleBuildStep {
 		}
 
 		public String getOracleHome() {
-			return oracleHome;
+			return globalOracleHome;
 		}
 
-		public void setOracleHome(String oracleHome) {
-			this.oracleHome = oracleHome;
+		public void setOracleHome(String globalOracleHome) {
+			this.globalOracleHome = globalOracleHome;
+		}
+
+		public String getGlobalSQLPlusHome() {
+			return globalSQLPlusHome;
+		}
+
+		public void setGlobalSQLPlusHome(String globalSQLPlusHome) {
+			this.globalSQLPlusHome = globalSQLPlusHome;
+		}
+
+		public String getGlobalTNSAdmin() {
+			return globalTNSAdmin;
+		}
+
+		public void setGlobalTNSAdmin(String globalTNSAdmin) {
+			this.globalTNSAdmin = globalTNSAdmin;
 		}
 
 		@SuppressWarnings("deprecation")
