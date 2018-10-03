@@ -1,0 +1,30 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
+  <f:entry title="${%Credentials}" field="credentialsId">
+    <c:select/>
+  </f:entry>
+  <f:entry title="${%instance}" field="instance">
+    <f:textbox />
+  </f:entry>
+  <f:entry name="scriptType" title="${%Script Type to run}" field="scriptType">
+    <select name="scriptType">
+     <f:option value="file"        selected="${instance.scriptType == 'file'}"       >${%File Script}</f:option>
+     <f:option value="userDefined" selected="${instance.scriptType == 'userDefined'}">${%User Defined Script}</f:option>
+    </select>
+  </f:entry>
+  <f:entry title="${%File Script}" field="script">
+    <f:textbox />
+  </f:entry>
+  <f:entry title="${%User Defined Script}" field="scriptContent">
+    <f:textarea />
+  </f:entry>
+  <f:entry title="${%Custom ORACLE_HOME}" field="customOracleHome" >
+    <f:textbox />
+  </f:entry>
+  <f:entry title="${%Custom SQLPLUS_HOME}" field="customSQLPlusHome" >
+    <f:textbox />
+  </f:entry>
+  <f:entry title="${%Custom TNS_ADMIN}" field="customTNSAdmin" >
+    <f:textbox />
+  </f:entry>
+</j:jelly>

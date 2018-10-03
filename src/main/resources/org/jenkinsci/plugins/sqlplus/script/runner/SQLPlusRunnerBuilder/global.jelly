@@ -1,0 +1,23 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:section title="SQLPlus Script Runner">
+
+	<f:entry title="${%Debug}" field="debug">
+ 	 <f:checkbox />
+	</f:entry>
+
+	<f:entry title="${%Hide SQLPlus Version}" field="hideSQLPlusVersion">
+ 	 <f:checkbox />
+	</f:entry>
+
+	<f:entry title="${%Try to detect ORACLE_HOME}" field="tryToDetectOracleHome">
+		<f:checkbox default="true" />
+	</f:entry>
+
+	<f:entry title="${%Set global ORACLE_HOME}" field="oracleHome">
+		<f:textbox />
+	</f:entry>
+
+ </f:section>
+</j:jelly>

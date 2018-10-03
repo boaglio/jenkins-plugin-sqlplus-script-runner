@@ -1,12 +1,11 @@
-package org.jenkinsci.plugins.sqlplusscriptrunner.test;
+package org.jenkinsci.plugins.sqlplus.script.runner.test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.jenkinsci.plugins.sqlplusscriptrunner.ExternalProgramUtil;
-import org.jenkinsci.plugins.sqlplusscriptrunner.ScriptType;
+import org.jenkinsci.plugins.sqlplus.script.runner.ScriptType;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -25,7 +24,7 @@ public class TestSQLPlus {
 
 		String detectedVersion = ExternalProgramUtil.getVersion(WORK_DIR,ORACLE_HOME);
 
-		System.out.println("detected version = " + detectedVersion);
+		System.out.println("SQLPlus detected version = " + detectedVersion);
 
 		assertTrue(detectedVersion.contains("SQL*Plus: Release 12.1.0.1.0 Production"));
 	}
