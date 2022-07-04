@@ -51,8 +51,13 @@ public class SQLPlusRunner implements Serializable {
 	private static final String MSG_CUSTOM_SQLPLUS_HOME = Messages.SQLPlusRunner_usingCustomSQLPlusHome();
 	private static final String MSG_CUSTOM_TNS_ADMIN = Messages.SQLPlusRunner_usingCustomTNSAdmin();
 	private static final String MSG_GLOBAL_ORACLE_HOME = Messages.SQLPlusRunner_usingGlobalOracleHome();
+	private static final String MSG_GLOBAL_SQLPLUS_HOME = Messages.SQLPlusRunner_usingGlobalSQLPlusHome();
+	private static final String MSG_GLOBAL_TNS_ADMIN = Messages.SQLPlusRunner_usingGlobalTNSAdmin();
 	private static final String MSG_USING_DETECTED_ORACLE_HOME = Messages.SQLPlusRunner_usingDetectedOracleHome();
 	private static final String MSG_GLOBAL_ORACLE_HOME_SELECTED = Messages.SQLPlusRunner_globalOracleHomeSelected();
+	private static final String MSG_GLOBAL_SQLPLUS_HOME_SELECTED = Messages.SQLPlusRunner_globalSQLPlusHomeSelected();
+	private static final String MSG_GLOBAL_TNS_ADMIN_SELECTED = Messages.SQLPlusRunner_globalTNSAdminSelected();
+	
 	private static final String MSG_TRY_DETECTED_ORACLE_HOME = Messages.SQLPlusRunner_tryToDetectOracleHome();
 	private static final String MSG_GLOBAL_ORACLE_HOME_SELECTED_ANYWAY = Messages
 			.SQLPlusRunner_globalOracleHomeSelectedAnyway();
@@ -85,7 +90,7 @@ public class SQLPlusRunner implements Serializable {
 
 	public SQLPlusRunner(Run<?, ?> build, TaskListener listener, Launcher launcher,
 			boolean isHideSQLPlusVersion, String user, String password, String instance, String script,
-			String oracleHome, String scriptType, String customOracleHome, String customSQLPlusHome,
+			String globalOracleHome, String globalSQLPlusHome,String globalTNSAdmin,String scriptType, String customOracleHome, String customSQLPlusHome,
 			String customTNSAdmin, boolean tryToDetectOracleHome, boolean debug) {
 		this.build = build;
 		this.listener = listener;
@@ -95,7 +100,9 @@ public class SQLPlusRunner implements Serializable {
 		this.password = password;
 		this.instance = instance;
 		this.script = script;
-		this.oracleHome = oracleHome;
+		this.globalOracleHome = globalOracleHome;
+		this.globalSQLPlusHome = globalSQLPlusHome;
+		this.globalTNSAdmin = globalTNSAdmin;
 		this.scriptType = scriptType;
 		this.customOracleHome = customOracleHome;
 		this.customSQLPlusHome = customSQLPlusHome;
@@ -120,13 +127,17 @@ public class SQLPlusRunner implements Serializable {
 
 	private String script;
 
-	private final String oracleHome;
+	private final String globalOracleHome;
+	
+	private final String globalSQLPlusHome;
+	
+	private final String globalTNSAdmin;
 
 	private final String customOracleHome;
 
-	private final String customSQLPlusHome;
+	private String customSQLPlusHome;
 
-	private final String customTNSAdmin;
+	private String customTNSAdmin;
 
 	private final String scriptType;
 
@@ -146,6 +157,12 @@ public class SQLPlusRunner implements Serializable {
 		if (customSQLPlusHome != null && customSQLPlusHome.length() > 0) {
 			listener.getLogger().println(MSG_CUSTOM_SQLPLUS_HOME);
 			listener.getLogger().println("SQL*Plus >>> " + customSQLPlusHome);
+		} else if (globalSQLPlusHome != null && globalSQLPlusHome.length() > 0) {
+			if (debug)
+				listener.getLogger().println(DEBUG_MSG + MSG_GLOBAL_SQLPLUS_HOME_SELECTED);
+			listener.getLogger().println(LINE);
+			listener.getLogger().println(MSG_GLOBAL_SQLPLUS_HOME);
+			customSQLPlusHome = globalSQLPlusHome;
 		}
 
 		// custom TNS_ADMIN
@@ -154,6 +171,13 @@ public class SQLPlusRunner implements Serializable {
 			listener.getLogger().println(MSG_CUSTOM_TNS_ADMIN);
 			listener.getLogger().println("TNS_ADMIN >>> " + customTNSAdmin);
 			hasCustomTNSAdmin = true;
+		}else if (globalTNSAdmin != null && globalTNSAdmin.length() > 0) {
+			if (debug)
+				listener.getLogger().println(DEBUG_MSG + MSG_GLOBAL_TNS_ADMIN_SELECTED);
+			listener.getLogger().println(LINE);
+			listener.getLogger().println(MSG_GLOBAL_TNS_ADMIN);
+			hasCustomTNSAdmin = true;
+			customTNSAdmin = globalTNSAdmin;
 		}
 
 		// custom ORACLE_HOME overrides everything
@@ -164,12 +188,12 @@ public class SQLPlusRunner implements Serializable {
 			listener.getLogger().println(MSG_CUSTOM_ORACLE_HOME);
 			selectedOracleHome = customOracleHome;
 			// global ORACLE_HOME comes next
-		} else if (oracleHome != null && oracleHome.length() > 0) {
+		} else if (globalOracleHome != null && globalOracleHome.length() > 0) {
 			if (debug)
 				listener.getLogger().println(DEBUG_MSG + MSG_GLOBAL_ORACLE_HOME_SELECTED);
 			listener.getLogger().println(LINE);
 			listener.getLogger().println(MSG_GLOBAL_ORACLE_HOME);
-			selectedOracleHome = oracleHome;
+			selectedOracleHome = globalOracleHome;
 			// now try to detect ORACLE_HOME
 		} else if (tryToDetectOracleHome && detectedOracleHome != null) {
 			if (debug)
@@ -181,7 +205,7 @@ public class SQLPlusRunner implements Serializable {
 			// nothing works, get global ORACLE_HOME
 			if (debug)
 				listener.getLogger().println(DEBUG_MSG + MSG_GLOBAL_ORACLE_HOME_SELECTED_ANYWAY);
-			selectedOracleHome = oracleHome;
+			selectedOracleHome = globalOracleHome;
 		}
 
 		if (!isHideSQLPlusVersion) {
@@ -335,8 +359,8 @@ public class SQLPlusRunner implements Serializable {
 								DEBUG_MSG + "found SQL*Plus on " + new File(selectedOracleHome).getAbsolutePath());
 					args.add(selectedOracleHome + File.separator + File.separator + sqlplus);
 				} else if (slaveMachine) {
-					listener.getLogger().println("SQL*Plus directory: " + oracleHome + File.separator + BIN_DIR);
-					args.add(oracleHome + File.separator + BIN_DIR + File.separator + sqlplus);
+					listener.getLogger().println("SQL*Plus directory: " + globalOracleHome + File.separator + BIN_DIR);
+					args.add(globalOracleHome + File.separator + BIN_DIR + File.separator + sqlplus);
 				} else {
 					throw new RuntimeException(Messages.SQLPlusRunner_missingSQLPlus());
 				}
