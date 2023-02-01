@@ -1,3 +1,7 @@
+
+## This repo moved to https://github.com/jenkinsci/sqlplus-script-runner-plugin 
+
+
 # jenkins-plugin-sqlplus-script-runner
 Jenkins plugin - SQL*Plus Script Runner
 
